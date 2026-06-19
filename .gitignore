@@ -1,0 +1,25 @@
+# Data, models, secrets — never committed (docs/07 §Notes)
+data/
+*.env
+.env
+!.env.example
+
+# Source PDFs are managed in object storage (MinIO), not git, in real deployments.
+# Keep the seed PDFs tracked for now; uncomment to exclude them:
+# *.pdf
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Models / weights
+*.bin
+*.safetensors

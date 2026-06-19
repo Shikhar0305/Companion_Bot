@@ -44,6 +44,42 @@ The full design is documented in [`docs/`](docs/):
 9. [Risk Assessment](docs/09-risk-assessment.md)
 10. [Production Readiness Checklist](docs/10-production-readiness-checklist.md)
 
+## Running the code
+
+The implementation lives alongside the docs (see [docs/07](docs/07-folder-structure.md)).
+The testable core (`core/`, `rag/`, `ingestion/`, `eval/`) runs on **pure stdlib**;
+production backends (Qdrant, BGE, Claude/Llama, FastAPI) are lazily imported and
+selected via env vars. Default profile = `stub` LLM + in-memory store + hashing
+embedder, so it boots with zero external services.
+
+```bash
+# Tests (pure stdlib + pytest)
+pip install pytest && python -m pytest -q
+
+# Evaluation harness against a seeded demo KB (enforces the release gate)
+PYTHONPATH=. python scripts/run_eval.py
+
+# Run the API (dev profile — no external services)
+pip install fastapi uvicorn pydantic
+uvicorn app.main:app --reload
+#   POST /ask        {"query": "..."}
+#   GET  /health  /ready  /sources/{chunk_id}   POST /feedback  /admin/ingest
+
+# Ingest the real seed PDFs into a KB version (needs the ocr extra)
+pip install ".[ocr,vectordb,embeddings]"
+EMBEDDER=bge VECTOR_STORE=qdrant python scripts/ingest_seed_corpus.py
+```
+
+Switch to production backends with env vars (see `.env.example`):
+`EMBEDDER=bge VECTOR_STORE=qdrant RERANKER=bge LLM_PROFILE=claude` (or
+`LLM_PROFILE=vllm` for the air-gapped Llama 3.3 profile). Full local stack:
+`docker compose -f infra/docker-compose.yml up`.
+
+The safety guarantees from the design are enforced in code: the grounding
+hard-gate verifier (`rag/nodes/verify.py`) abstains on any hallucinated
+legal/SOP reference, queries naming a section the KB lacks abstain, off-domain
+and injection inputs are refused, and every answer is written to an audit trail.
+
 ## Headline design choices
 
 | Area | Choice | Why |
