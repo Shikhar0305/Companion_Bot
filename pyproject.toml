@@ -1,0 +1,35 @@
+[project]
+name = "companion-bot"
+version = "1.0.0"
+description = "Source-grounded RAG assistant for cybercrime investigation officers"
+requires-python = ">=3.11"
+
+# Core runtime for the API + production backends. The pure-stdlib core (rag,
+# ingestion, core, eval) runs without these; install for the live service.
+dependencies = [
+    "fastapi>=0.110",
+    "uvicorn[standard]>=0.29",
+    "pydantic>=2.6",
+]
+
+[project.optional-dependencies]
+# Production backends — install per deployment profile.
+embeddings = ["FlagEmbedding>=1.2"]          # BGE-M3 + BGE-reranker
+vectordb = ["qdrant-client>=1.9"]
+claude = ["anthropic>=0.40"]
+vllm = ["openai>=1.30"]                        # OpenAI-compatible vLLM endpoint
+ocr = ["pymupdf>=1.24", "pytesseract>=0.3.10", "pillow>=10.0"]
+orchestration = ["langgraph>=0.2", "langchain-core>=0.3"]
+dev = ["pytest>=8.0", "ruff>=0.4", "mypy>=1.9"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.mypy]
+python_version = "3.11"
+ignore_missing_imports = true
