@@ -1,0 +1,653 @@
+# CCHQ Cybercrime Legal Repository — Qdrant filtering metadata
+# One entry per statutory section referenced by the SOP. Payload designed for
+# keyword/keyword[]/bool/int filters in Qdrant. point_id is stable.
+schema_version: 1
+collection: cchq_legal_kb
+vector: {size: 1024, distance: Cosine}
+payload_index:
+  - {field: statute_code, type: keyword}
+  - {field: section_number, type: keyword}
+  - {field: crime_categories, type: keyword}
+  - {field: offence_tags, type: keyword}
+  - {field: legal_stage, type: keyword}
+  - {field: statute_kind, type: keyword}
+  - {field: cognizable, type: bool}
+  - {field: bailable, type: bool}
+  - {field: child_related, type: bool}
+  - {field: financial_related, type: bool}
+  - {field: evidence_admissibility, type: bool}
+  - {field: pdf_grounded, type: bool}
+  - {field: statute_year, type: integer}
+sections:
+  - point_id: 1
+    statute_code: IT_ACT
+    statute_kind: substantive
+    statute_year: 2000
+    section_number: "43"
+    section_name: "Penalty and compensation for damage to computer, computer system, etc."
+    legal_stage: charging
+    offence_tags: ["data_protection", "unauthorised_access"]
+    crime_categories: ["UPI/Banking Fraud", "Loan App Fraud", "Ransomware", "SIM Swap Fraud", "Dark Web Crime"]
+    child_related: false
+    financial_related: false
+    evidence_admissibility: false
+    cognizable: true   # indicative; confirm per offence
+    bailable: false   # indicative; confirm per offence
+    pdf_grounded: true
+    doc_ref: "docs/legal_repository/IT_Act.md"
+  - point_id: 2
+    statute_code: IT_ACT
+    statute_kind: substantive
+    statute_year: 2000
+    section_number: "66"
+    section_name: "Computer related offences"
+    legal_stage: charging
+    offence_tags: ["unauthorised_access"]
+    crime_categories: ["UPI/Banking Fraud", "Trading Scam", "Loan App Fraud", "Ransomware", "Dark Web Crime"]
+    child_related: false
+    financial_related: false
+    evidence_admissibility: false
+    cognizable: true   # indicative; confirm per offence
+    bailable: true   # indicative; confirm per offence
+    pdf_grounded: true
+    doc_ref: "docs/legal_repository/IT_Act.md"
+  - point_id: 3
+    statute_code: IT_ACT
+    statute_kind: substantive
+    statute_year: 2000
+    section_number: "66C"
+    section_name: "Punishment for identity theft"
+    legal_stage: charging
+    offence_tags: ["financial_offence", "identity_offence"]
+    crime_categories: ["UPI/Banking Fraud", "Investment Scam", "Trading Scam", "Loan App Fraud", "Sextortion", "Social Media Impersonation", "Online Shopping Fraud", "Identity Theft", "Cyber Stalking & Harassment", "Deepfake Fraud", "Ransomware", "BEC", "SIM Swap Fraud", "Crypto Fraud", "CSAM", "Dark Web Crime", "Online Gambling Fraud", "QR Code Fraud", "Fake Job Scam"]
+    child_related: false
+    financial_related: true
+    evidence_admissibility: false
+    cognizable: true   # indicative; confirm per offence
+    bailable: true   # indicative; confirm per offence
+    pdf_grounded: true
+    doc_ref: "docs/legal_repository/IT_Act.md"
+  - point_id: 4
+    statute_code: IT_ACT
+    statute_kind: substantive
+    statute_year: 2000
+    section_number: "66D"
+    section_name: "Punishment for cheating by personation by using computer resource"
+    legal_stage: charging
+    offence_tags: ["financial_offence", "identity_offence"]
+    crime_categories: ["UPI/Banking Fraud", "Investment Scam", "Trading Scam", "Loan App Fraud", "Social Media Impersonation", "Online Shopping Fraud", "Identity Theft", "Deepfake Fraud", "Ransomware", "BEC", "SIM Swap Fraud", "Crypto Fraud", "Dark Web Crime", "Online Gambling Fraud", "QR Code Fraud", "Fake Job Scam"]
+    child_related: false
+    financial_related: true
+    evidence_admissibility: false
+    cognizable: true   # indicative; confirm per offence
+    bailable: true   # indicative; confirm per offence
+    pdf_grounded: true
+    doc_ref: "docs/legal_repository/IT_Act.md"
+  - point_id: 5
+    statute_code: IT_ACT
+    statute_kind: substantive
+    statute_year: 2000
+    section_number: "66E"
+    section_name: "Punishment for violation of privacy"
+    legal_stage: charging
+    offence_tags: ["sexual_or_privacy_offence"]
+    crime_categories: ["Sextortion", "Cyber Stalking & Harassment", "Deepfake Fraud", "CSAM"]
+    child_related: false
+    financial_related: false
+    evidence_admissibility: false
+    cognizable: true   # indicative; confirm per offence
+    bailable: false   # indicative; confirm per offence
+    pdf_grounded: true
+    doc_ref: "docs/legal_repository/IT_Act.md"
+  - point_id: 6
+    statute_code: IT_ACT
+    statute_kind: substantive
+    statute_year: 2000
+    section_number: "67"
+    section_name: "Punishment for publishing or transmitting obscene material in electronic form"
+    legal_stage: charging
+    offence_tags: ["sexual_or_privacy_offence"]
+    crime_categories: ["Sextortion"]
+    child_related: false
+    financial_related: false
+    evidence_admissibility: false
+    cognizable: true   # indicative; confirm per offence
+    bailable: false   # indicative; confirm per offence
+    pdf_grounded: true
+    doc_ref: "docs/legal_repository/IT_Act.md"
+  - point_id: 7
+    statute_code: IT_ACT
+    statute_kind: substantive
+    statute_year: 2000
+    section_number: "67A"
+    section_name: "Punishment for publishing or transmitting of material containing sexually explicit act, etc., in electronic form"
+    legal_stage: charging
+    offence_tags: ["sexual_or_privacy_offence"]
+    crime_categories: ["Sextortion", "Deepfake Fraud", "CSAM"]
+    child_related: false
+    financial_related: false
+    evidence_admissibility: false
+    cognizable: true   # indicative; confirm per offence
+    bailable: false   # indicative; confirm per offence
+    pdf_grounded: true
+    doc_ref: "docs/legal_repository/IT_Act.md"
+  - point_id: 8
+    statute_code: IT_ACT
+    statute_kind: substantive
+    statute_year: 2000
+    section_number: "67B"
+    section_name: "Punishment for publishing or transmitting of material depicting children in sexually explicit act, etc., in electronic form (CSAM)"
+    legal_stage: charging
+    offence_tags: ["sexual_or_privacy_offence"]
+    crime_categories: ["Sextortion", "CSAM"]
+    child_related: true
+    financial_related: false
+    evidence_admissibility: false
+    cognizable: true   # indicative; confirm per offence
+    bailable: false   # indicative; confirm per offence
+    pdf_grounded: true
+    doc_ref: "docs/legal_repository/IT_Act.md"
+  - point_id: 9
+    statute_code: IT_ACT
+    statute_kind: substantive
+    statute_year: 2000
+    section_number: "72"
+    section_name: "Penalty for breach of confidentiality and privacy"
+    legal_stage: charging
+    offence_tags: ["data_protection", "sexual_or_privacy_offence"]
+    crime_categories: ["Loan App Fraud"]
+    child_related: false
+    financial_related: false
+    evidence_admissibility: false
+    cognizable: true   # indicative; confirm per offence
+    bailable: false   # indicative; confirm per offence
+    pdf_grounded: true
+    doc_ref: "docs/legal_repository/IT_Act.md"
+  - point_id: 10
+    statute_code: BNS
+    statute_kind: substantive
+    statute_year: 2023
+    section_number: "61"
+    section_name: "Criminal conspiracy"
+    legal_stage: charging
+    offence_tags: ["conspiracy"]
+    crime_categories: ["UPI/Banking Fraud", "Investment Scam", "Trading Scam", "Loan App Fraud", "Sextortion", "Social Media Impersonation", "Online Shopping Fraud", "Identity Theft", "Cyber Stalking & Harassment", "Deepfake Fraud", "Ransomware", "BEC", "SIM Swap Fraud", "Crypto Fraud", "CSAM", "Dark Web Crime", "Online Gambling Fraud", "QR Code Fraud", "Fake Job Scam"]
+    child_related: false
+    financial_related: false
+    evidence_admissibility: false
+    cognizable: true   # indicative; confirm per offence
+    bailable: false   # indicative; confirm per offence
+    pdf_grounded: true
+    doc_ref: "docs/legal_repository/BNS.md"
+  - point_id: 11
+    statute_code: BNS
+    statute_kind: substantive
+    statute_year: 2023
+    section_number: "74–79"
+    section_name: "Sexual harassment, voyeurism, stalking and related offences against women"
+    legal_stage: charging
+    offence_tags: ["sexual_or_privacy_offence"]
+    crime_categories: ["Sextortion", "Social Media Impersonation", "Cyber Stalking & Harassment", "Deepfake Fraud"]
+    child_related: false
+    financial_related: false
+    evidence_admissibility: false
+    cognizable: true   # indicative; confirm per offence
+    bailable: false   # indicative; confirm per offence
+    pdf_grounded: true
+    doc_ref: "docs/legal_repository/BNS.md"
+  - point_id: 12
+    statute_code: BNS
+    statute_kind: substantive
+    statute_year: 2023
+    section_number: "303(2)"
+    section_name: "Theft (including theft of digital assets/data)"
+    legal_stage: charging
+    offence_tags: ["data_protection", "financial_offence"]
+    crime_categories: ["Investment Scam", "Loan App Fraud"]
+    child_related: false
+    financial_related: true
+    evidence_admissibility: false
+    cognizable: true   # indicative; confirm per offence
+    bailable: false   # indicative; confirm per offence
+    pdf_grounded: true
+    doc_ref: "docs/legal_repository/BNS.md"
+  - point_id: 13
+    statute_code: BNS
+    statute_kind: substantive
+    statute_year: 2023
+    section_number: "308"
+    section_name: "Extortion"
+    legal_stage: charging
+    offence_tags: ["financial_offence"]
+    crime_categories: ["Investment Scam", "Loan App Fraud", "Sextortion", "Social Media Impersonation", "Deepfake Fraud", "Ransomware", "CSAM", "Dark Web Crime"]
+    child_related: false
+    financial_related: true
+    evidence_admissibility: false
+    cognizable: true   # indicative; confirm per offence
+    bailable: false   # indicative; confirm per offence
+    pdf_grounded: true
+    doc_ref: "docs/legal_repository/BNS.md"
+  - point_id: 14
+    statute_code: BNS
+    statute_kind: substantive
+    statute_year: 2023
+    section_number: "316"
+    section_name: "Criminal breach of trust"
+    legal_stage: charging
+    offence_tags: ["financial_offence"]
+    crime_categories: ["Investment Scam", "Trading Scam"]
+    child_related: false
+    financial_related: true
+    evidence_admissibility: false
+    cognizable: true   # indicative; confirm per offence
+    bailable: false   # indicative; confirm per offence
+    pdf_grounded: true
+    doc_ref: "docs/legal_repository/BNS.md"
+  - point_id: 15
+    statute_code: BNS
+    statute_kind: substantive
+    statute_year: 2023
+    section_number: "318"
+    section_name: "Cheating"
+    legal_stage: charging
+    offence_tags: ["financial_offence"]
+    crime_categories: ["UPI/Banking Fraud", "Investment Scam", "Trading Scam", "Loan App Fraud", "Social Media Impersonation", "Online Shopping Fraud", "Identity Theft", "Deepfake Fraud", "Ransomware", "BEC", "SIM Swap Fraud", "Crypto Fraud", "Dark Web Crime", "Online Gambling Fraud", "QR Code Fraud", "Fake Job Scam"]
+    child_related: false
+    financial_related: true
+    evidence_admissibility: false
+    cognizable: true   # indicative; confirm per offence
+    bailable: false   # indicative; confirm per offence
+    pdf_grounded: true
+    doc_ref: "docs/legal_repository/BNS.md"
+  - point_id: 16
+    statute_code: BNS
+    statute_kind: substantive
+    statute_year: 2023
+    section_number: "319"
+    section_name: "Cheating by personation"
+    legal_stage: charging
+    offence_tags: ["financial_offence", "identity_offence"]
+    crime_categories: ["UPI/Banking Fraud", "Investment Scam", "Trading Scam", "Loan App Fraud", "Social Media Impersonation", "Online Shopping Fraud", "Identity Theft", "Deepfake Fraud", "BEC", "SIM Swap Fraud", "Crypto Fraud", "Dark Web Crime", "Online Gambling Fraud", "QR Code Fraud", "Fake Job Scam"]
+    child_related: false
+    financial_related: true
+    evidence_admissibility: false
+    cognizable: true   # indicative; confirm per offence
+    bailable: false   # indicative; confirm per offence
+    pdf_grounded: true
+    doc_ref: "docs/legal_repository/BNS.md"
+  - point_id: 17
+    statute_code: BNS
+    statute_kind: substantive
+    statute_year: 2023
+    section_number: "335"
+    section_name: "Making a false document"
+    legal_stage: charging
+    offence_tags: ["evidence", "forgery"]
+    crime_categories: ["UPI/Banking Fraud"]
+    child_related: false
+    financial_related: false
+    evidence_admissibility: false
+    cognizable: true   # indicative; confirm per offence
+    bailable: false   # indicative; confirm per offence
+    pdf_grounded: true
+    doc_ref: "docs/legal_repository/BNS.md"
+  - point_id: 18
+    statute_code: BNS
+    statute_kind: substantive
+    statute_year: 2023
+    section_number: "336"
+    section_name: "Forgery"
+    legal_stage: charging
+    offence_tags: ["forgery"]
+    crime_categories: ["Investment Scam", "Trading Scam", "Social Media Impersonation", "Online Shopping Fraud", "Identity Theft", "Deepfake Fraud", "BEC", "SIM Swap Fraud", "Crypto Fraud", "Dark Web Crime", "QR Code Fraud", "Fake Job Scam"]
+    child_related: false
+    financial_related: false
+    evidence_admissibility: false
+    cognizable: true   # indicative; confirm per offence
+    bailable: false   # indicative; confirm per offence
+    pdf_grounded: true
+    doc_ref: "docs/legal_repository/BNS.md"
+  - point_id: 19
+    statute_code: BNS
+    statute_kind: substantive
+    statute_year: 2023
+    section_number: "340"
+    section_name: "Forged document or electronic record used as genuine"
+    legal_stage: charging
+    offence_tags: ["evidence", "forgery"]
+    crime_categories: ["Investment Scam", "Trading Scam", "Social Media Impersonation", "Online Shopping Fraud", "Identity Theft", "Deepfake Fraud", "BEC", "SIM Swap Fraud", "Crypto Fraud", "Dark Web Crime", "QR Code Fraud", "Fake Job Scam"]
+    child_related: false
+    financial_related: false
+    evidence_admissibility: false
+    cognizable: true   # indicative; confirm per offence
+    bailable: false   # indicative; confirm per offence
+    pdf_grounded: true
+    doc_ref: "docs/legal_repository/BNS.md"
+  - point_id: 20
+    statute_code: BNS
+    statute_kind: substantive
+    statute_year: 2023
+    section_number: "351"
+    section_name: "Criminal intimidation"
+    legal_stage: charging
+    offence_tags: ["sexual_or_privacy_offence"]
+    crime_categories: ["Loan App Fraud", "Sextortion", "Social Media Impersonation", "Cyber Stalking & Harassment", "Deepfake Fraud", "Ransomware", "CSAM"]
+    child_related: false
+    financial_related: false
+    evidence_admissibility: false
+    cognizable: true   # indicative; confirm per offence
+    bailable: true   # indicative; confirm per offence
+    pdf_grounded: true
+    doc_ref: "docs/legal_repository/BNS.md"
+  - point_id: 21
+    statute_code: BNS
+    statute_kind: substantive
+    statute_year: 2023
+    section_number: "356"
+    section_name: "Defamation"
+    legal_stage: charging
+    offence_tags: ["sexual_or_privacy_offence"]
+    crime_categories: ["Loan App Fraud", "Sextortion", "Social Media Impersonation", "Cyber Stalking & Harassment", "Deepfake Fraud"]
+    child_related: false
+    financial_related: false
+    evidence_admissibility: false
+    cognizable: true   # indicative; confirm per offence
+    bailable: true   # indicative; confirm per offence
+    pdf_grounded: true
+    doc_ref: "docs/legal_repository/BNS.md"
+  - point_id: 22
+    statute_code: BNSS
+    statute_kind: procedural
+    statute_year: 2023
+    section_number: "94"
+    section_name: "Summons to produce document or other thing (incl. electronic records)"
+    legal_stage: procedure
+    offence_tags: ["evidence", "procedure"]
+    crime_categories: ["Investment Scam", "Trading Scam", "Loan App Fraud", "Sextortion", "Social Media Impersonation", "Online Shopping Fraud", "Identity Theft", "Cyber Stalking & Harassment", "Deepfake Fraud", "Ransomware", "BEC", "SIM Swap Fraud", "Crypto Fraud", "CSAM", "Dark Web Crime", "Online Gambling Fraud", "QR Code Fraud", "Fake Job Scam"]
+    child_related: false
+    financial_related: false
+    evidence_admissibility: false
+    cognizable: false   # indicative; confirm per offence
+    bailable: false   # indicative; confirm per offence
+    pdf_grounded: true
+    doc_ref: "docs/legal_repository/BNSS.md"
+  - point_id: 23
+    statute_code: BNSS
+    statute_kind: procedural
+    statute_year: 2023
+    section_number: "173"
+    section_name: "Information in cognizable cases (FIR registration)"
+    legal_stage: procedure
+    offence_tags: ["procedure"]
+    crime_categories: ["Investment Scam", "Trading Scam", "Loan App Fraud", "Sextortion", "Social Media Impersonation", "Online Shopping Fraud", "Identity Theft", "Cyber Stalking & Harassment", "Deepfake Fraud", "Ransomware", "BEC", "SIM Swap Fraud", "Crypto Fraud", "CSAM", "Dark Web Crime", "Online Gambling Fraud", "QR Code Fraud", "Fake Job Scam"]
+    child_related: false
+    financial_related: false
+    evidence_admissibility: false
+    cognizable: false   # indicative; confirm per offence
+    bailable: false   # indicative; confirm per offence
+    pdf_grounded: true
+    doc_ref: "docs/legal_repository/BNSS.md"
+  - point_id: 24
+    statute_code: BNSS
+    statute_kind: procedural
+    statute_year: 2023
+    section_number: "176"
+    section_name: "Procedure for investigation of cognizable offence"
+    legal_stage: procedure
+    offence_tags: ["procedure"]
+    crime_categories: ["Investment Scam", "Trading Scam", "Loan App Fraud", "Sextortion", "Social Media Impersonation", "Online Shopping Fraud", "Identity Theft", "Cyber Stalking & Harassment", "Deepfake Fraud", "Ransomware", "BEC", "SIM Swap Fraud", "Crypto Fraud", "CSAM", "Dark Web Crime", "Online Gambling Fraud", "QR Code Fraud", "Fake Job Scam"]
+    child_related: false
+    financial_related: false
+    evidence_admissibility: false
+    cognizable: false   # indicative; confirm per offence
+    bailable: false   # indicative; confirm per offence
+    pdf_grounded: true
+    doc_ref: "docs/legal_repository/BNSS.md"
+  - point_id: 25
+    statute_code: BNSS
+    statute_kind: procedural
+    statute_year: 2023
+    section_number: "185"
+    section_name: "Search by police officer"
+    legal_stage: procedure
+    offence_tags: ["procedure"]
+    crime_categories: ["Investment Scam", "Trading Scam", "Loan App Fraud", "Sextortion", "Social Media Impersonation", "Online Shopping Fraud", "Identity Theft", "Cyber Stalking & Harassment", "Deepfake Fraud", "Ransomware", "BEC", "SIM Swap Fraud", "Crypto Fraud", "CSAM", "Dark Web Crime", "Online Gambling Fraud", "QR Code Fraud", "Fake Job Scam"]
+    child_related: false
+    financial_related: false
+    evidence_admissibility: false
+    cognizable: false   # indicative; confirm per offence
+    bailable: false   # indicative; confirm per offence
+    pdf_grounded: true
+    doc_ref: "docs/legal_repository/BNSS.md"
+  - point_id: 26
+    statute_code: BNSS
+    statute_kind: procedural
+    statute_year: 2023
+    section_number: "186"
+    section_name: "Search/requisition by an investigating officer (incl. beyond local limits) and seizure"
+    legal_stage: procedure
+    offence_tags: ["procedure"]
+    crime_categories: ["Investment Scam", "Trading Scam", "Loan App Fraud", "Sextortion", "Social Media Impersonation", "Online Shopping Fraud", "Identity Theft", "Cyber Stalking & Harassment", "Deepfake Fraud", "Ransomware", "BEC", "SIM Swap Fraud", "Crypto Fraud", "CSAM", "Dark Web Crime", "Online Gambling Fraud", "QR Code Fraud", "Fake Job Scam"]
+    child_related: false
+    financial_related: false
+    evidence_admissibility: false
+    cognizable: false   # indicative; confirm per offence
+    bailable: false   # indicative; confirm per offence
+    pdf_grounded: true
+    doc_ref: "docs/legal_repository/BNSS.md"
+  - point_id: 27
+    statute_code: BNSS
+    statute_kind: procedural
+    statute_year: 2023
+    section_number: "193"
+    section_name: "Report of police officer on completion of investigation (charge sheet)"
+    legal_stage: procedure
+    offence_tags: ["procedure"]
+    crime_categories: ["Investment Scam", "Trading Scam", "Loan App Fraud", "Sextortion", "Social Media Impersonation", "Online Shopping Fraud", "Identity Theft", "Cyber Stalking & Harassment", "Deepfake Fraud", "Ransomware", "BEC", "SIM Swap Fraud", "Crypto Fraud", "CSAM", "Dark Web Crime", "Online Gambling Fraud", "QR Code Fraud", "Fake Job Scam"]
+    child_related: false
+    financial_related: false
+    evidence_admissibility: false
+    cognizable: false   # indicative; confirm per offence
+    bailable: false   # indicative; confirm per offence
+    pdf_grounded: true
+    doc_ref: "docs/legal_repository/BNSS.md"
+  - point_id: 28
+    statute_code: BSA
+    statute_kind: evidentiary
+    statute_year: 2023
+    section_number: "2(1)(d)"
+    section_name: "Definition of document (including electronic and digital records)"
+    legal_stage: evidence
+    offence_tags: ["evidence"]
+    crime_categories: ["Investment Scam", "Trading Scam", "Loan App Fraud", "Sextortion", "Social Media Impersonation", "Online Shopping Fraud", "Identity Theft", "Cyber Stalking & Harassment", "Deepfake Fraud", "Ransomware", "BEC", "SIM Swap Fraud", "Crypto Fraud", "CSAM", "Dark Web Crime", "Online Gambling Fraud", "QR Code Fraud", "Fake Job Scam"]
+    child_related: false
+    financial_related: false
+    evidence_admissibility: true
+    cognizable: false   # indicative; confirm per offence
+    bailable: false   # indicative; confirm per offence
+    pdf_grounded: false
+    doc_ref: "docs/legal_repository/BSA.md"
+  - point_id: 29
+    statute_code: BSA
+    statute_kind: evidentiary
+    statute_year: 2023
+    section_number: "39"
+    section_name: "Opinion of experts (incl. digital/forensic experts)"
+    legal_stage: evidence
+    offence_tags: ["evidence"]
+    crime_categories: ["Investment Scam", "Trading Scam", "Loan App Fraud", "Sextortion", "Social Media Impersonation", "Online Shopping Fraud", "Identity Theft", "Cyber Stalking & Harassment", "Deepfake Fraud", "Ransomware", "BEC", "SIM Swap Fraud", "Crypto Fraud", "CSAM", "Dark Web Crime", "Online Gambling Fraud", "QR Code Fraud", "Fake Job Scam"]
+    child_related: false
+    financial_related: false
+    evidence_admissibility: true
+    cognizable: false   # indicative; confirm per offence
+    bailable: false   # indicative; confirm per offence
+    pdf_grounded: false
+    doc_ref: "docs/legal_repository/BSA.md"
+  - point_id: 30
+    statute_code: BSA
+    statute_kind: evidentiary
+    statute_year: 2023
+    section_number: "57"
+    section_name: "Proof of electronic and digital records / primary evidence"
+    legal_stage: evidence
+    offence_tags: ["evidence"]
+    crime_categories: ["Investment Scam", "Trading Scam", "Loan App Fraud", "Sextortion", "Social Media Impersonation", "Online Shopping Fraud", "Identity Theft", "Cyber Stalking & Harassment", "Deepfake Fraud", "Ransomware", "BEC", "SIM Swap Fraud", "Crypto Fraud", "CSAM", "Dark Web Crime", "Online Gambling Fraud", "QR Code Fraud", "Fake Job Scam"]
+    child_related: false
+    financial_related: false
+    evidence_admissibility: true
+    cognizable: false   # indicative; confirm per offence
+    bailable: false   # indicative; confirm per offence
+    pdf_grounded: false
+    doc_ref: "docs/legal_repository/BSA.md"
+  - point_id: 31
+    statute_code: BSA
+    statute_kind: evidentiary
+    statute_year: 2023
+    section_number: "63"
+    section_name: "Admissibility of electronic records (certificate requirement)"
+    legal_stage: evidence
+    offence_tags: ["evidence"]
+    crime_categories: ["Investment Scam", "Trading Scam", "Loan App Fraud", "Sextortion", "Social Media Impersonation", "Online Shopping Fraud", "Identity Theft", "Cyber Stalking & Harassment", "Deepfake Fraud", "Ransomware", "BEC", "SIM Swap Fraud", "Crypto Fraud", "CSAM", "Dark Web Crime", "Online Gambling Fraud", "QR Code Fraud", "Fake Job Scam"]
+    child_related: false
+    financial_related: false
+    evidence_admissibility: true
+    cognizable: false   # indicative; confirm per offence
+    bailable: false   # indicative; confirm per offence
+    pdf_grounded: false
+    doc_ref: "docs/legal_repository/BSA.md"
+  - point_id: 32
+    statute_code: POCSO
+    statute_kind: special_substantive
+    statute_year: 2012
+    section_number: "11 & 12"
+    section_name: "Sexual harassment of a child and punishment"
+    legal_stage: charging
+    offence_tags: ["sexual_or_privacy_offence"]
+    crime_categories: ["Sextortion", "CSAM"]
+    child_related: true
+    financial_related: false
+    evidence_admissibility: false
+    cognizable: true   # indicative; confirm per offence
+    bailable: false   # indicative; confirm per offence
+    pdf_grounded: false
+    doc_ref: "docs/legal_repository/POCSO.md"
+  - point_id: 33
+    statute_code: POCSO
+    statute_kind: special_substantive
+    statute_year: 2012
+    section_number: "13 & 14"
+    section_name: "Use of a child for pornographic purposes and punishment"
+    legal_stage: charging
+    offence_tags: ["sexual_or_privacy_offence"]
+    crime_categories: ["Sextortion", "CSAM"]
+    child_related: true
+    financial_related: false
+    evidence_admissibility: false
+    cognizable: true   # indicative; confirm per offence
+    bailable: false   # indicative; confirm per offence
+    pdf_grounded: false
+    doc_ref: "docs/legal_repository/POCSO.md"
+  - point_id: 34
+    statute_code: POCSO
+    statute_kind: special_substantive
+    statute_year: 2012
+    section_number: "15"
+    section_name: "Punishment for storage/possession of child pornographic material"
+    legal_stage: charging
+    offence_tags: ["sexual_or_privacy_offence"]
+    crime_categories: ["Sextortion", "CSAM"]
+    child_related: true
+    financial_related: false
+    evidence_admissibility: false
+    cognizable: true   # indicative; confirm per offence
+    bailable: false   # indicative; confirm per offence
+    pdf_grounded: false
+    doc_ref: "docs/legal_repository/POCSO.md"
+  - point_id: 35
+    statute_code: POCSO
+    statute_kind: special_substantive
+    statute_year: 2012
+    section_number: "19–22"
+    section_name: "Mandatory reporting and procedural safeguards"
+    legal_stage: charging
+    offence_tags: ["procedure"]
+    crime_categories: ["Sextortion", "CSAM"]
+    child_related: true
+    financial_related: false
+    evidence_admissibility: false
+    cognizable: true   # indicative; confirm per offence
+    bailable: false   # indicative; confirm per offence
+    pdf_grounded: false
+    doc_ref: "docs/legal_repository/POCSO.md"
+  - point_id: 36
+    statute_code: DPDP
+    statute_kind: regulatory
+    statute_year: 2023
+    section_number: "4"
+    section_name: "Grounds for processing personal data"
+    legal_stage: regulatory
+    offence_tags: ["data_protection"]
+    crime_categories: ["Loan App Fraud"]
+    child_related: false
+    financial_related: false
+    evidence_admissibility: false
+    cognizable: false   # indicative; confirm per offence
+    bailable: false   # indicative; confirm per offence
+    pdf_grounded: false
+    doc_ref: "docs/legal_repository/DPDP.md"
+  - point_id: 37
+    statute_code: DPDP
+    statute_kind: regulatory
+    statute_year: 2023
+    section_number: "5 & 6"
+    section_name: "Notice and consent"
+    legal_stage: regulatory
+    offence_tags: ["data_protection"]
+    crime_categories: ["Loan App Fraud"]
+    child_related: false
+    financial_related: false
+    evidence_admissibility: false
+    cognizable: false   # indicative; confirm per offence
+    bailable: false   # indicative; confirm per offence
+    pdf_grounded: false
+    doc_ref: "docs/legal_repository/DPDP.md"
+  - point_id: 38
+    statute_code: DPDP
+    statute_kind: regulatory
+    statute_year: 2023
+    section_number: "8"
+    section_name: "General obligations of a data fiduciary (incl. purpose limitation and data minimisation)"
+    legal_stage: regulatory
+    offence_tags: ["data_protection"]
+    crime_categories: ["Loan App Fraud"]
+    child_related: false
+    financial_related: false
+    evidence_admissibility: false
+    cognizable: false   # indicative; confirm per offence
+    bailable: false   # indicative; confirm per offence
+    pdf_grounded: false
+    doc_ref: "docs/legal_repository/DPDP.md"
+  - point_id: 39
+    statute_code: DPDP
+    statute_kind: regulatory
+    statute_year: 2023
+    section_number: "33"
+    section_name: "Penalties and the Data Protection Board"
+    legal_stage: regulatory
+    offence_tags: ["data_protection"]
+    crime_categories: ["Loan App Fraud"]
+    child_related: false
+    financial_related: false
+    evidence_admissibility: false
+    cognizable: false   # indicative; confirm per offence
+    bailable: false   # indicative; confirm per offence
+    pdf_grounded: false
+    doc_ref: "docs/legal_repository/DPDP.md"
+
+recommended_filters:
+  charge_a_financial_fraud: {must: [{statute_kind: substantive}, {financial_related: true}]}
+  child_offence_law: {must: [{child_related: true}]}
+  evidence_admissibility_rules: {must: [{evidence_admissibility: true}]}   # BSA sections
+  procedure_for_investigation: {must: [{legal_stage: procedure}]}   # BNSS sections
+  laws_for_a_crime: {must: [{crime_categories: {any: ['Crypto Fraud']}}]}
+  court_ready_only: {must: [{pdf_grounded: true}]}   # exclude BSA/POCSO/DPDP pending gazette verification
