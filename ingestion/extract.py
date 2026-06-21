@@ -48,3 +48,13 @@ def _ocr_page(page, ocr_lang: str) -> str:
 def pages_to_text(pages: list[Page]) -> str:
     """Join pages with page markers used to recover citation page numbers."""
     return "\n".join(f"[[PAGE {p.page_number}]]\n{p.text}" for p in pages)
+
+
+def extract_markdown(path: str) -> str:
+    """Read a Markdown (.md) file as raw text. Pure stdlib — no page markers.
+
+    Markdown is already structured text, so there is no OCR/extraction step;
+    the heading hierarchy is preserved for the structure-aware chunker.
+    """
+    with open(path, encoding="utf-8") as fh:
+        return fh.read()
