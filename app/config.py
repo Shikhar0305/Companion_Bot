@@ -16,7 +16,7 @@ def _b(name: str, default: bool) -> bool:
 
 @dataclass
 class Settings:
-    # Backends: hash|bge, memory|qdrant, noop|bge, stub|claude|vllm
+    # Backends: hash|bge, memory|qdrant, noop|bge, stub|claude|vllm|ollama
     embedder: str = os.environ.get("EMBEDDER", "hash")
     vector_store: str = os.environ.get("VECTOR_STORE", "memory")
     reranker: str = os.environ.get("RERANKER", "noop")
@@ -24,6 +24,10 @@ class Settings:
 
     qdrant_url: str = os.environ.get("QDRANT_URL", "http://localhost:6333")
     qdrant_collection: str = os.environ.get("QDRANT_COLLECTION", "kb")
+
+    # Ollama (on-prem) — used when LLM_PROFILE=ollama.
+    ollama_base_url: str = os.environ.get("OLLAMA_BASE_URL", "http://localhost:11434")
+    ollama_model: str = os.environ.get("OLLAMA_MODEL", "qwen3:8b")
 
     kb_version: str = os.environ.get("KB_VERSION", "kb_v1")
     retrieve_k: int = int(os.environ.get("RETRIEVE_K", "20"))

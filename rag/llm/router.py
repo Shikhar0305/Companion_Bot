@@ -1,7 +1,7 @@
 """Cost-aware model routing (docs/05 §5.5, docs/08 §8.6).
 
 Default: a cheap/fast model for routine queries, escalate to a stronger model for
-complex or low-confidence ones. Profiles: stub | claude | vllm.
+complex or low-confidence ones. Profiles: stub | claude | vllm | ollama.
 """
 from __future__ import annotations
 
@@ -35,6 +35,11 @@ def build_router(profile: str) -> LLMRouter:
         from rag.llm.vllm_llama import VLLMLlama
 
         client = VLLMLlama()
+        return LLMRouter(default=client, escalation=client)
+    if profile == "ollama":
+        from rag.llm.ollama import OllamaLLM
+
+        client = OllamaLLM()
         return LLMRouter(default=client, escalation=client)
     stub = StubLLM()
     return LLMRouter(default=stub, escalation=stub)
