@@ -11,15 +11,33 @@ import re
 from core.constants import (
     CAPABILITY_KEYWORDS,
     CATEGORY_KEYWORDS,
+    RECOVERY_KEYWORDS,
 )
 from rag.services import Services
 from rag.state import GraphState
 
+# Single-token domain vocabulary (matched against query tokens) and multi-word
+# domain phrases (matched as substrings) — the latter lets terms like
+# "fund recall" or "beneficiary tracing" register without over-broadening.
 _DOMAIN_TERMS: set[str] = set()
+_DOMAIN_PHRASES: set[str] = set()
+
+
+def _add_term(term: str) -> None:
+    if " " in term:
+        _DOMAIN_PHRASES.add(term.lower())
+    else:
+        _DOMAIN_TERMS.add(term.lower())
+
+
 for _kw in CAPABILITY_KEYWORDS.values():
-    _DOMAIN_TERMS.update(_kw)
+    for _t in _kw:
+        _add_term(_t)
 for _kw in CATEGORY_KEYWORDS.values():
-    _DOMAIN_TERMS.update(w for kw in [_kw] for w in kw)
+    for _t in _kw:
+        _add_term(_t)
+for _t in RECOVERY_KEYWORDS:
+    _add_term(_t)
 _DOMAIN_TERMS.update({
     "cyber", "cybercrime", "crime", "fraud", "scam", "investigate", "investigation",
     "complaint", "victim", "accused", "evidence", "police", "officer", "case",
@@ -50,9 +68,14 @@ def guardrail(state: GraphState, services: Services) -> GraphState:
         state.verifier_report["injection_blocked"] = True
         return state
 
-    tokens = set(re.findall(r"[a-z0-9]+", q.lower()))
-    # In scope if it mentions any domain term OR an explicit legal/section cue.
-    in_scope = bool(tokens & _DOMAIN_TERMS) or bool(re.search(r"\bsection\b|\bu/s\b", q, re.I))
+    low = q.lower()
+    tokens = set(re.findall(r"[a-z0-9]+", low))
+    # In scope if it mentions any domain token, a domain phrase, or a legal cue.
+    in_scope = (
+        bool(tokens & _DOMAIN_TERMS)
+        or any(phrase in low for phrase in _DOMAIN_PHRASES)
+        or bool(re.search(r"\bsection\b|\bu/s\b", q, re.I))
+    )
     if not in_scope:
         state.in_scope = False
         state.refusal = _REFUSAL

@@ -83,10 +83,23 @@ CAPABILITY_KEYWORDS: dict[str, tuple[str, ...]] = {
     "osint": ("osint", "ip address", "domain", "whois", "username", "geolocation",
               "social media", "open source"),
     "financial": ("upi", "transaction", "freeze", "bank", "account", "money trail",
-                  "npci", "rbi", "refund", "ledger", "beneficiary"),
+                  "npci", "rbi", "refund", "ledger", "beneficiary",
+                  "1930", "ncrp", "recall", "reversal", "chargeback", "mule",
+                  "nodal", "wallet", "recovery", "helpline"),
     "investigation": ("procedure", "steps", "checklist", "fir", "investigation",
                       "next step", "how to investigate", "sop"),
 }
+
+# Recovery-domain terminology (financial-fraud recovery workflow). Used by the
+# scope guardrail so recovery questions are recognised as in-domain, and as
+# category cues for the recovery repository. Mix of single tokens and phrases.
+RECOVERY_KEYWORDS: tuple[str, ...] = (
+    "1930", "ncrp", "account freeze", "fund recall", "beneficiary tracing",
+    "mule account", "chargeback", "transaction reversal", "bank nodal officer",
+    "crypto asset recovery", "wallet tracing", "fund recovery",
+    # single-token aliases that may appear standalone in queries
+    "freeze", "recall", "reversal", "beneficiary", "nodal", "helpline", "mule",
+)
 
 # Statute aliases used in query expansion (docs/03-rag-architecture.md §3.3 node 2).
 STATUTE_ALIASES: dict[str, tuple[str, ...]] = {
