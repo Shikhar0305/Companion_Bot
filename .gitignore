@@ -1,5 +1,7 @@
 # Data, models, secrets — never committed (docs/07 §Notes)
-data/
+# Exception: data/corpus/ holds the curated, version-controlled knowledge base.
+/data/*
+!/data/corpus/
 *.env
 .env
 !.env.example

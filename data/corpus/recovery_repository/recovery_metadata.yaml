@@ -1,0 +1,119 @@
+# CCHQ Cybercrime Recovery Repository — Qdrant filtering metadata
+# One entry per recovery procedure document. Payload designed for
+# keyword/keyword[]/bool filters in Qdrant. point_id is stable.
+# Grounded in the in-repo decision trees + legal repository (see each doc's
+# provenance note); not a content source — attach to chunks at load time.
+schema_version: 1
+collection: cchq_recovery_kb
+vector: {size: 1024, distance: Cosine}
+payload_index:
+  - {field: doc_code, type: keyword}
+  - {field: recovery_stage, type: keyword}
+  - {field: channels, type: keyword}
+  - {field: asset_types, type: keyword}
+  - {field: crime_categories, type: keyword}
+  - {field: applicable_statutes, type: keyword}
+  - {field: escalation_to, type: keyword}
+  - {field: time_critical, type: bool}
+  - {field: golden_hour, type: bool}
+  - {field: cross_border, type: bool}
+  - {field: source_grounded, type: bool}
+sections:
+  - point_id: 1
+    doc_code: NCRP_WORKFLOW
+    doc_title: "NCRP Workflow"
+    recovery_stage: reporting
+    channels: ["NCRP", "I4C", "1930"]
+    asset_types: ["bank_funds", "upi", "card", "crypto"]
+    crime_categories: ["UPI/Banking Fraud", "Investment Scam", "Crypto Fraud", "OTP Fraud", "Online Shopping Fraud"]
+    applicable_statutes: ["BNSS_173", "BNSS_176", "IT_ACT_66C", "IT_ACT_66D", "BNS_318", "BNS_319"]
+    escalation_to: ["state_cyber_nodal_officer", "i4c"]
+    time_critical: true
+    golden_hour: true
+    cross_border: false
+    source_grounded: true
+    doc_ref: "data/corpus/recovery_repository/NCRP_Workflow.md"
+  - point_id: 2
+    doc_code: HELPLINE_1930
+    doc_title: "1930 Helpline"
+    recovery_stage: reporting
+    channels: ["1930", "NCRP", "I4C", "bank_nodal"]
+    asset_types: ["bank_funds", "upi", "card"]
+    crime_categories: ["UPI/Banking Fraud", "OTP Fraud", "SIM Swap Fraud", "Investment Scam"]
+    applicable_statutes: ["IT_ACT_66C", "IT_ACT_66D", "BNS_318", "BNS_319", "BNS_303(2)", "BNS_316"]
+    escalation_to: ["bank_nodal_officer", "state_cyber_nodal_officer", "i4c"]
+    time_critical: true
+    golden_hour: true
+    cross_border: false
+    source_grounded: true
+    doc_ref: "data/corpus/recovery_repository/1930_Helpline.md"
+  - point_id: 3
+    doc_code: ACCOUNT_FREEZE
+    doc_title: "Account Freeze"
+    recovery_stage: freezing
+    channels: ["bank_nodal", "I4C", "NCRP"]
+    asset_types: ["bank_funds", "upi", "card"]
+    crime_categories: ["UPI/Banking Fraud", "Loan App Fraud", "Investment Scam", "Online Shopping Fraud"]
+    applicable_statutes: ["BNSS_94", "BNSS_176", "IT_ACT_66D", "BNS_318", "BNS_319", "BNS_316", "BNS_303(2)"]
+    escalation_to: ["bank_nodal_officer", "state_cyber_nodal_officer", "i4c", "fiu_ind"]
+    time_critical: true
+    golden_hour: true
+    cross_border: false
+    source_grounded: true
+    doc_ref: "data/corpus/recovery_repository/Account_Freeze.md"
+  - point_id: 4
+    doc_code: FUND_RECALL
+    doc_title: "Fund Recall"
+    recovery_stage: recall
+    channels: ["bank_nodal", "NPCI", "RBI", "I4C"]
+    asset_types: ["bank_funds", "upi", "card"]
+    crime_categories: ["UPI/Banking Fraud", "Investment Scam", "Online Shopping Fraud"]
+    applicable_statutes: ["BNSS_94", "BNSS_176", "BNSS_193", "IT_ACT_66D", "BNS_318", "BNS_319", "BNS_316"]
+    escalation_to: ["bank_nodal_officer", "state_cyber_nodal_officer", "court", "i4c"]
+    time_critical: true
+    golden_hour: false
+    cross_border: false
+    source_grounded: true
+    doc_ref: "data/corpus/recovery_repository/Fund_Recall.md"
+  - point_id: 5
+    doc_code: BENEFICIARY_TRACING
+    doc_title: "Beneficiary Tracing"
+    recovery_stage: tracing
+    channels: ["bank_nodal", "telecom", "platform", "I4C"]
+    asset_types: ["bank_funds", "upi", "card"]
+    crime_categories: ["UPI/Banking Fraud", "Investment Scam", "SIM Swap Fraud", "Business Email Compromise"]
+    applicable_statutes: ["BNSS_94", "BNSS_176", "BSA_63", "BSA_57", "IT_ACT_66D", "BNS_318", "BNS_319", "BNS_316", "BNS_303(2)"]
+    escalation_to: ["bank_nodal_officer", "state_cyber_nodal_officer", "i4c"]
+    time_critical: true
+    golden_hour: false
+    cross_border: false
+    source_grounded: true
+    doc_ref: "data/corpus/recovery_repository/Beneficiary_Tracing.md"
+  - point_id: 6
+    doc_code: MULE_ACCOUNT_INVESTIGATION
+    doc_title: "Mule Account Investigation"
+    recovery_stage: investigation
+    channels: ["bank_nodal", "telecom", "platform", "I4C", "fiu_ind"]
+    asset_types: ["bank_funds", "upi"]
+    crime_categories: ["UPI/Banking Fraud", "Loan App Fraud", "SIM Swap Fraud", "Investment Scam"]
+    applicable_statutes: ["BNSS_94", "BNSS_185", "BNSS_186", "BNS_316", "BNS_318", "BNS_319", "IT_ACT_66D", "BSA_63"]
+    escalation_to: ["specialised_unit", "fiu_ind", "ed", "i4c"]
+    time_critical: true
+    golden_hour: false
+    cross_border: false
+    source_grounded: true
+    doc_ref: "data/corpus/recovery_repository/Mule_Account_Investigation.md"
+  - point_id: 7
+    doc_code: CRYPTO_ASSET_RECOVERY
+    doc_title: "Crypto Asset Recovery"
+    recovery_stage: asset_recovery
+    channels: ["exchange", "vasp", "I4C", "fiu_ind", "mlat"]
+    asset_types: ["crypto"]
+    crime_categories: ["Crypto Fraud", "Investment Scam", "Trading Scam"]
+    applicable_statutes: ["IT_ACT_66", "IT_ACT_66D", "BNS_318", "BNS_319", "BNS_316", "BNSS_94", "BSA_63", "BSA_57"]
+    escalation_to: ["specialised_unit", "fiu_ind", "ed", "international_coordination", "i4c"]
+    time_critical: true
+    golden_hour: false
+    cross_border: true
+    source_grounded: true
+    doc_ref: "data/corpus/recovery_repository/Crypto_Asset_Recovery.md"
