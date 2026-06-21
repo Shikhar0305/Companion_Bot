@@ -13,6 +13,8 @@ DOC_TYPES = (
     "playbook",   # fraud / OSINT playbooks
     "advisory",   # CERT-In, I4C, RBI, NPCI
     "circular",   # police circulars
+    "decision_tree",  # crime-type investigation decision trees
+    "recovery",       # fund-recovery / escalation repositories
 )
 
 # Capability areas the assistant supports (see docs/02-solution-architecture.md)

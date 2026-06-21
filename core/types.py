@@ -35,6 +35,8 @@ class Chunk:
     page_end: Optional[int] = None
     parent_chunk_id: Optional[str] = None
     source_hash: str = ""
+    # Sidecar-supplied payload (e.g. legal_metadata.yaml) for retrieval filtering.
+    extra_metadata: dict[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)

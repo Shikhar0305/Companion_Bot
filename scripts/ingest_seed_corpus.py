@@ -1,46 +1,51 @@
 #!/usr/bin/env python3
-"""Ingest the seed corpus (BNS, BNSS, IT Act, Cyber Crime SOP) into a KB version.
+"""Ingest the corpus into a KB version via auto-discovery (docs/04 §4.2).
+
+Walks ``data/corpus/`` recursively — no hardcoded file list. Markdown is chunked
+structurally, PDFs go through the existing PyMuPDF/OCR path (backward compatible),
+and ``legal_metadata.yaml`` is attached to chunks as sidecar metadata (never
+chunked). The process/validate stages are pure stdlib; embedding+load uses the
+configured embedder/vector store.
 
 Usage:
-    python scripts/ingest_seed_corpus.py            # process + validate + (optionally) load
-
-Requires PyMuPDF for PDF extraction (and OCR deps for the scanned SOP). The
-process/validate stages are pure stdlib; embedding+load uses the configured
-embedder/vector store.
+    python scripts/ingest_seed_corpus.py            # discover + validate + load
+    CORPUS_ROOT=data/corpus python scripts/ingest_seed_corpus.py
 """
 from __future__ import annotations
 
+import os
 import sys
 
 from app.config import get_settings
+from ingestion.discovery import DEFAULT_CORPUS_ROOT, discover_corpus
 from ingestion.embed import embed_and_load
-from ingestion.pipeline import SourceSpec, process_pdf, validate
+from ingestion.pipeline import process_markdown, process_pdf, validate
+from ingestion.sidecar import enrich_chunks, load_sidecar_index
 from rag.services import build_services
-
-SEED = [
-    SourceSpec("it_act_2000_updated.pdf", "itact2000",
-               "Information Technology Act, 2000", "act",
-               issuing_authority="Government of India", version="2000"),
-    SourceSpec("BNS.pdf", "bns2023", "Bharatiya Nyaya Sanhita, 2023", "sanhita",
-               issuing_authority="Government of India", version="2023"),
-    SourceSpec("BNSS.pdf", "bnss2023", "Bharatiya Nagarik Suraksha Sanhita, 2023",
-               "sanhita", issuing_authority="Government of India", version="2023"),
-    SourceSpec("SOPCCHQ.pdf", "sopcchq", "Cyber Crime Investigation SOP", "sop",
-               issuing_authority="CCHQ", version="2023"),
-]
 
 
 def main() -> int:
     settings = get_settings()
+    root = os.environ.get("CORPUS_ROOT", DEFAULT_CORPUS_ROOT)
+
+    sources, sidecar_paths = discover_corpus(root)
+    if not sources:
+        print(f"[ingest] no ingestible files found under {root!r}.")
+        return 1
+    index = load_sidecar_index(sidecar_paths)
+    print(f"[discover] {len(sources)} sources, {len(sidecar_paths)} sidecar file(s) under {root!r}")
+
     all_chunks = []
-    for spec in SEED:
-        print(f"[ingest] {spec.path} ({spec.doc_type}) …")
+    for src in sources:
+        spec, fmt = src.spec, src.fmt
+        print(f"[ingest] {spec.path} ({spec.doc_type}, {fmt}) …")
         try:
-            chunks = process_pdf(spec)
+            chunks = process_markdown(spec) if fmt == "md" else process_pdf(spec)
         except Exception as exc:  # noqa: BLE001
             print(f"  ! failed to process {spec.path}: {exc}")
             continue
-        print(f"  -> {len(chunks)} chunks")
+        n_meta = enrich_chunks(chunks, os.path.basename(spec.path), index)
+        print(f"  -> {len(chunks)} chunks ({n_meta} enriched from sidecar)")
         all_chunks.extend(chunks)
 
     result = validate(all_chunks)

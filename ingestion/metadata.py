@@ -13,6 +13,7 @@ _DEFAULT_AREA = {
     "act": "legal", "sanhita": "legal",
     "sop": "investigation", "manual": "forensics",
     "playbook": "osint", "advisory": "financial", "circular": "investigation",
+    "decision_tree": "investigation", "recovery": "financial",
 }
 
 

@@ -17,8 +17,8 @@ _AREA_DOC_TYPES = {
     "legal": ["act", "sanhita"],
     "forensics": ["sop", "manual"],
     "osint": ["playbook", "manual", "sop"],
-    "financial": ["sop", "advisory"],
-    "investigation": ["sop", "manual"],
+    "financial": ["sop", "advisory", "recovery"],
+    "investigation": ["sop", "manual", "decision_tree"],
 }
 
 

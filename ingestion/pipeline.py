@@ -26,10 +26,11 @@ class SourceSpec:
     language: str = "en"
 
 
-def process_text(raw_text: str, spec: SourceSpec) -> list[Chunk]:
+def process_text(raw_text: str, spec: SourceSpec, *, is_markdown: bool = False) -> list[Chunk]:
     """Run clean → chunk → tag on already-extracted text. Pure stdlib."""
     cleaned = clean_text(raw_text)
-    chunks = chunk_document(cleaned, spec.doc_id, spec.title, spec.doc_type)
+    chunks = chunk_document(cleaned, spec.doc_id, spec.title, spec.doc_type,
+                            is_markdown=is_markdown)
     return [
         tag_chunk(
             c, issuing_authority=spec.issuing_authority, version=spec.version,
@@ -37,6 +38,14 @@ def process_text(raw_text: str, spec: SourceSpec) -> list[Chunk]:
         )
         for c in chunks
     ]
+
+
+def process_markdown(spec: SourceSpec) -> list[Chunk]:
+    """Full pipeline from a Markdown path. Pure stdlib (no PyMuPDF/OCR)."""
+    from ingestion.extract import extract_markdown
+
+    raw = extract_markdown(spec.path)
+    return process_text(raw, spec, is_markdown=True)
 
 
 def process_pdf(spec: SourceSpec, ocr_lang: str = "eng+hin") -> list[Chunk]:

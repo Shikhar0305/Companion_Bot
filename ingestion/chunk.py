@@ -13,6 +13,12 @@ from dataclasses import dataclass
 from core.types import Chunk
 
 _PAGE_MARK = re.compile(r"\[\[PAGE (\d+)\]\]")
+# Markdown ATX heading: capture level (#) and heading text.
+_MD_HEADING = re.compile(r"(?m)^(#{1,6})\s+(.+?)\s*#*$")
+# "**Section Number:** 66C" inside the legal-repository markdown.
+_MD_SECNO = re.compile(r"\*\*Section Number:\*\*\s*([0-9]+[A-Za-z]{0,3})", re.IGNORECASE)
+# "... Section 66C — Title" embedded in a heading line (legal repository).
+_MD_HEAD_SECNO = re.compile(r"Section\s+([0-9]+[A-Za-z]{0,3})\b", re.IGNORECASE)
 # "Section 66D. Title" / "66A. Title" / "Section 4." etc.
 _SECTION = re.compile(
     r"(?:^|\n)\s*(?:Section\s+)?(\d+[A-Z]{0,2})\.\s+(.{0,120}?)(?=\n)",
@@ -121,7 +127,63 @@ def _chunk_fallback(text: str, doc_id: str, title: str, doc_type: str,
     return chunks
 
 
-def chunk_document(text: str, doc_id: str, title: str, doc_type: str) -> list[Chunk]:
+def _slug(s: str) -> str:
+    return re.sub(r"[^a-z0-9]+", "_", s.lower()).strip("_")[:48] or "x"
+
+
+def chunk_markdown(text: str, doc_id: str, title: str, doc_type: str) -> list[Chunk]:
+    """Heading-aware chunking for Markdown corpus files.
+
+    Splits on the finest heading level that delimits the body (e.g. ``###`` per
+    statutory section in the legal repository, ``##`` per decision branch in a
+    decision tree), keeping each section intact. Legal section numbers are read
+    from the ``**Section Number:**`` line (or the heading) so downstream sidecar
+    metadata can join on them.
+    """
+    headings = list(_MD_HEADING.finditer(text))
+    if not headings:
+        return _chunk_fallback(text, doc_id, title, doc_type)
+
+    # Pick the split level: prefer the deepest level that occurs >=2 times.
+    levels = [len(m.group(1)) for m in headings]
+    repeated = sorted({lvl for lvl in levels if levels.count(lvl) >= 2}, reverse=True)
+    split_level = repeated[0] if repeated else min(levels)
+
+    # Boundaries are headings at or above (shallower than) the split level.
+    boundaries = [m for m in headings if len(m.group(1)) <= split_level]
+    is_legal = doc_type in ("act", "sanhita")
+    chunks: list[Chunk] = []
+    for i, m in enumerate(boundaries):
+        start = m.start()
+        end = boundaries[i + 1].start() if i + 1 < len(boundaries) else len(text)
+        body = text[start:end].strip()
+        if len(body) < 20:
+            continue
+        heading = m.group(2).strip()
+        kwargs: dict = {}
+        if is_legal:
+            mn = _MD_SECNO.search(body) or _MD_HEAD_SECNO.search(heading)
+            sec_no = mn.group(1) if mn else None
+            kwargs["section_number"] = sec_no
+            kwargs["section_title"] = heading
+            cid = f"{doc_id}_sec_{sec_no.lower()}" if sec_no else f"{doc_id}_md{i}"
+        else:
+            kwargs["procedure_name"] = heading
+            cid = f"{doc_id}_{_slug(heading)}"
+        chunks.append(
+            Chunk(
+                chunk_id=cid, doc_id=doc_id, doc_type=doc_type, title=title,
+                text=body, source_hash=_hash(body),
+                parent_chunk_id=f"{doc_id}_full", **kwargs,
+            )
+        )
+    return chunks or _chunk_fallback(text, doc_id, title, doc_type)
+
+
+def chunk_document(text: str, doc_id: str, title: str, doc_type: str,
+                   *, is_markdown: bool = False) -> list[Chunk]:
+    if is_markdown:
+        return chunk_markdown(text, doc_id, title, doc_type)
     if doc_type in ("act", "sanhita"):
         return chunk_legal(text, doc_id, title, doc_type)
     if doc_type in ("sop", "manual", "playbook"):
