@@ -1,8 +1,11 @@
 """Dependency wiring for the API: build Services + audit store from Settings,
-and (in the dev profile) seed a tiny demo KB so the endpoint works out of the box.
+and load the approved corpus (data/corpus) at startup so the endpoint answers
+from the real knowledge base. Falls back to a tiny demo KB only when no corpus
+is present (so the service still boots with zero content on disk).
 """
 from __future__ import annotations
 
+import os
 from functools import lru_cache
 
 from app.config import Settings, get_settings
@@ -64,12 +67,44 @@ def _seed_demo_kb(services: Services) -> None:
     embed_and_load(chunks, services.embedder, services.vector_store)
 
 
+def _load_corpus(services: Services) -> int:
+    """Ingest data/corpus into the store at startup. Returns #chunks loaded.
+
+    Reuses the production ingestion path (discovery → process → sidecar enrich →
+    embed/load), so the API answers from the same corpus that
+    scripts/ingest_seed_corpus.py builds. Returns 0 when no corpus is present.
+    """
+    from ingestion.discovery import discover_corpus
+    from ingestion.pipeline import process_markdown, process_pdf
+    from ingestion.sidecar import enrich_chunks, load_sidecar_index
+
+    root = os.environ.get("CORPUS_ROOT", "data/corpus")
+    sources, sidecars = discover_corpus(root)
+    if not sources:
+        return 0
+    index = load_sidecar_index(sidecars)
+    all_chunks = []
+    for src in sources:
+        try:
+            chunks = process_markdown(src.spec) if src.fmt == "md" else process_pdf(src.spec)
+        except Exception:  # noqa: BLE001 - skip unreadable file, keep loading the rest
+            continue
+        enrich_chunks(chunks, os.path.basename(src.spec.path), index)
+        all_chunks += chunks
+    if not all_chunks:
+        return 0
+    return embed_and_load(all_chunks, services.embedder, services.vector_store)
+
+
 @lru_cache(maxsize=1)
 def get_services() -> Services:
     settings = get_settings()
     services = _build_services(settings)
-    if settings.vector_store == "memory":
-        _seed_demo_kb(services)
+    # Qdrant is populated out-of-band by scripts/ingest_seed_corpus.py; only the
+    # in-memory profile loads the corpus at startup.
+    if settings.vector_store == "memory" and services.vector_store.count() == 0:
+        if _load_corpus(services) == 0:
+            _seed_demo_kb(services)  # fallback only when no corpus on disk
     return services
 
 
