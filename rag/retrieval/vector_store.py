@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import math
 import re
+import uuid
 from typing import Optional, Protocol
 
 from core.types import Chunk, RetrievedChunk
@@ -103,23 +104,61 @@ class InMemoryVectorStore:
 
 
 class QdrantVectorStore:
-    """Production store backed by Qdrant. Heavy deps imported lazily."""
+    """Production store backed by Qdrant. Heavy deps imported lazily.
+
+    Creates the collection automatically (vector size from the embedder, cosine
+    distance) and stores each chunk's full metadata as the point payload. Point
+    ids are deterministic UUIDs derived from chunk_id, so re-ingestion upserts in
+    place (idempotent) instead of duplicating.
+    """
+
+    # Stable namespace so the same chunk_id always maps to the same point id.
+    _NS = uuid.UUID("6f9619ff-8b86-d011-b42d-00cf4fc964ff")
+    # Payload fields worth indexing for fast metadata filtering.
+    _INDEX_FIELDS = ("doc_type", "doc_id", "capability_area", "cybercrime_categories")
 
     def __init__(self, url: str, collection: str, embedder: Embedder) -> None:
         from qdrant_client import QdrantClient  # lazy
 
-        self._client = QdrantClient(url=url)
+        # ":memory:" runs an embedded Qdrant (no server) — used by tests.
+        if url == ":memory:":
+            self._client = QdrantClient(location=":memory:")
+        else:
+            self._client = QdrantClient(url=url)
         self._collection = collection
         self._embedder = embedder
+        self._ensure_collection()
+
+    def _ensure_collection(self) -> None:
+        from qdrant_client.models import Distance, VectorParams  # lazy
+
+        existing = {c.name for c in self._client.get_collections().collections}
+        if self._collection in existing:
+            return
+        self._client.create_collection(
+            collection_name=self._collection,
+            vectors_config=VectorParams(size=self._embedder.dim, distance=Distance.COSINE),
+        )
+        for field in self._INDEX_FIELDS:
+            try:
+                self._client.create_payload_index(
+                    collection_name=self._collection, field_name=field, field_schema="keyword",
+                )
+            except Exception:  # noqa: BLE001 - index is an optimisation, not required
+                pass
+
+    def _point_id(self, chunk_id: str) -> str:
+        return str(uuid.uuid5(self._NS, chunk_id))
 
     def upsert(self, chunks: list[Chunk], vectors: list[list[float]]) -> None:
         from qdrant_client.models import PointStruct  # lazy
 
         points = [
-            PointStruct(id=i, vector=vec, payload=chunk.to_dict())
-            for i, (chunk, vec) in enumerate(zip(chunks, vectors))
+            PointStruct(id=self._point_id(chunk.chunk_id), vector=vec, payload=chunk.to_dict())
+            for chunk, vec in zip(chunks, vectors)
         ]
-        self._client.upsert(collection_name=self._collection, points=points)
+        if points:
+            self._client.upsert(collection_name=self._collection, points=points)
 
     def get(self, chunk_id: str) -> Optional[Chunk]:
         from qdrant_client.models import Filter, FieldCondition, MatchValue  # lazy
@@ -128,6 +167,7 @@ class QdrantVectorStore:
             collection_name=self._collection,
             scroll_filter=Filter(must=[FieldCondition(key="chunk_id", match=MatchValue(value=chunk_id))]),
             limit=1,
+            with_payload=True,
         )
         points = res[0]
         return Chunk.from_dict(points[0].payload) if points else None
@@ -140,10 +180,18 @@ class QdrantVectorStore:
         filters: Optional[dict] = None,
     ) -> list[RetrievedChunk]:
         qfilter = self._build_filter(filters)
-        hits = self._client.search(
-            collection_name=self._collection, query_vector=query_vector,
-            limit=k, query_filter=qfilter,
-        )
+        # query_points is the current API; fall back to search on older clients.
+        if hasattr(self._client, "query_points"):
+            res = self._client.query_points(
+                collection_name=self._collection, query=query_vector,
+                limit=k, query_filter=qfilter, with_payload=True,
+            )
+            hits = res.points
+        else:  # pragma: no cover - legacy client path
+            hits = self._client.search(
+                collection_name=self._collection, query_vector=query_vector,
+                limit=k, query_filter=qfilter,
+            )
         return [RetrievedChunk(chunk=Chunk.from_dict(h.payload), score=float(h.score))
                 for h in hits]
 
@@ -163,10 +211,19 @@ class QdrantVectorStore:
 
 
 def build_vector_store(name: str, embedder: Embedder, **kw):
+    """Build a vector store. Qdrant falls back to in-memory when unavailable
+    (missing client or unreachable server) unless allow_fallback=False."""
     if name == "qdrant":
-        return QdrantVectorStore(
-            url=kw.get("url", "http://localhost:6333"),
-            collection=kw.get("collection", "kb"),
-            embedder=embedder,
-        )
+        allow_fallback = kw.get("allow_fallback", True)
+        try:
+            return QdrantVectorStore(
+                url=kw.get("url", "http://localhost:6333"),
+                collection=kw.get("collection", "kb"),
+                embedder=embedder,
+            )
+        except Exception as exc:  # noqa: BLE001 - connection/import failure
+            if not allow_fallback:
+                raise
+            print(f"[vector_store] Qdrant unavailable ({exc}); falling back to in-memory.")
+            return InMemoryVectorStore()
     return InMemoryVectorStore()
