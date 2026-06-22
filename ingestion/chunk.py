@@ -131,6 +131,19 @@ def _slug(s: str) -> str:
     return re.sub(r"[^a-z0-9]+", "_", s.lower()).strip("_")[:48] or "x"
 
 
+_MD_BLOCKQUOTE = re.compile(r"(?m)^\s*>.*$")   # provenance/risk metadata lines
+_MD_HRULE = re.compile(r"(?m)^\s*-{3,}\s*$")    # horizontal rules
+
+
+def _clean_md_body(text: str) -> str:
+    """Strip non-content markdown noise (provenance blockquotes, rules) so the
+    document front-matter does not surface as a retrievable/citable chunk."""
+    text = _MD_BLOCKQUOTE.sub("", text)
+    text = _MD_HRULE.sub("", text)
+    text = re.sub(r"\n{3,}", "\n\n", text)
+    return text.strip()
+
+
 def chunk_markdown(text: str, doc_id: str, title: str, doc_type: str) -> list[Chunk]:
     """Heading-aware chunking for Markdown corpus files.
 
@@ -149,20 +162,26 @@ def chunk_markdown(text: str, doc_id: str, title: str, doc_type: str) -> list[Ch
     repeated = sorted({lvl for lvl in levels if levels.count(lvl) >= 2}, reverse=True)
     split_level = repeated[0] if repeated else min(levels)
 
-    # Boundaries are headings at or above (shallower than) the split level.
-    boundaries = [m for m in headings if len(m.group(1)) <= split_level]
+    # Chunk at the section level only; the shallower title/preamble block above
+    # the first section is intentionally dropped (it is provenance boilerplate).
+    boundaries = [m for m in headings if len(m.group(1)) == split_level]
+    if not boundaries:
+        return _chunk_fallback(text, doc_id, title, doc_type)
     is_legal = doc_type in ("act", "sanhita")
     chunks: list[Chunk] = []
     for i, m in enumerate(boundaries):
         start = m.start()
         end = boundaries[i + 1].start() if i + 1 < len(boundaries) else len(text)
-        body = text[start:end].strip()
-        if len(body) < 20:
+        section = _clean_md_body(text[start:end])
+        if len(section) < 20:
             continue
         heading = m.group(2).strip()
+        # Carry the document title into the chunk text so section-level chunks
+        # retain the document's topical keywords for retrieval.
+        body = f"{title}\n\n{section}"
         kwargs: dict = {}
         if is_legal:
-            mn = _MD_SECNO.search(body) or _MD_HEAD_SECNO.search(heading)
+            mn = _MD_SECNO.search(section) or _MD_HEAD_SECNO.search(heading)
             sec_no = mn.group(1) if mn else None
             kwargs["section_number"] = sec_no
             kwargs["section_title"] = heading
