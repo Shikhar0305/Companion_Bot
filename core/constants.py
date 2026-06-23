@@ -109,6 +109,65 @@ STATUTE_ALIASES: dict[str, tuple[str, ...]] = {
     "it act": ("information technology act", "it act 2000"),
 }
 
+# Investigator/legal/forensic/financial terminology used by the scope guardrail
+# to recognise in-domain questions. These are matched as stems (prefix) so plural
+# and inflected forms are covered (e.g. "provision" -> "provisions", "record" ->
+# "records", "transaction" -> "transactions", "investigat" -> "investigators").
+INVESTIGATOR_TERMS: tuple[str, ...] = (
+    # legal
+    "legal", "law", "statut", "section", "clause", "provision", "offen", "penal",
+    "punish", "bailable", "cognizable", "prosecut", "charg", "warrant",
+    "jurisdiction", "liabilit", "convict", "accus", "suspect",
+    # unauthorised access / computer crime
+    "unauthor", "intrus", "hack", "breach", "access", "computer", "network",
+    "contaminant", "virus", "exfiltrat", "tamper",
+    # sexual / child exploitation
+    "sexual", "exploit", "obscene", "pornograph", "csam", "minor", "child",
+    "pocso", "harass", "stalk", "sextort", "voyeur", "morph",
+    # records / preservation / service providers / forensics
+    "record", "preserv", "retention", "subscriber", "service", "provid",
+    "platform", "telecom", "metadata", "seiz", "custod", "forens", "acquisition",
+    "imaging", "device", "digital", "intermediar",
+    # complainant / reporting
+    "complain", "victim", "report", "register", "intake", "statement", "witness",
+    "informant",
+    # financial / recovery
+    "trace", "trail", "fund", "money", "transaction", "transfer", "remittance",
+    "beneficiar", "freeze", "recall", "reversal", "chargeback", "mule", "account",
+    "bank", "payment", "wallet", "ledger", "recover", "launder", "nodal",
+    "helpline", "proceeds",
+    # investigation general
+    "investigat", "evidence", "arrest", "procedure", "checklist", "escalat",
+    "modus", "attribut",
+    # crime types
+    "phish", "vish", "smish", "malware", "ransom", "extort", "impersonat",
+    "deepfake", "crypto", "romance", "loan", "trading", "gambling", "identity",
+    "espionage", "ecommerce", "investment", "fraud", "scam", "fake", "cyber",
+    "offence", "spoof", "skimming",
+)
+
+# Crime-term synonyms used to expand the query so lexical retrieval can bridge
+# everyday phrasing to the wording used in statutes/SOPs.
+CRIME_SYNONYMS: dict[str, tuple[str, ...]] = {
+    "malware": ("malicious software", "computer contaminant", "virus", "trojan"),
+    "phishing": ("spoofed", "fraudulent", "fake login", "identity theft", "cheating by personation"),
+    "unauthorized access": ("unauthorised access", "hacking", "computer related offence", "without permission"),
+    "unauthorised access": ("hacking", "computer related offence", "without permission"),
+    "sexual exploitation": ("obscene", "pornographic", "csam", "child", "sexually explicit"),
+    "service provider": ("intermediary", "platform", "telecom", "subscriber", "ip logs"),
+    "trace funds": ("money trail", "transaction trail", "beneficiary", "financial trail"),
+    "mule account": ("layered account", "downstream account", "beneficiary account"),
+    "trading scam": ("fake trading platform", "investment fraud"),
+    "loan app": ("instant loan", "loan application fraud"),
+    # Bare crime-name cues that steer decision-tree queries to the right tree.
+    "trading": ("trading scam",),
+    "romance": ("romance scam",),
+    "loan": ("loan app fraud", "loan application"),
+    "gambling": ("online gambling fraud",),
+    "deepfake": ("deepfake fraud",),
+    "sextortion": ("sextortion",),
+}
+
 # Default abstention message — must be returned verbatim when unsupported.
 ABSTENTION_MESSAGE = "Information not found in approved knowledge sources."
 

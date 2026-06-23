@@ -11,37 +11,57 @@ import re
 from core.constants import (
     CAPABILITY_KEYWORDS,
     CATEGORY_KEYWORDS,
+    INVESTIGATOR_TERMS,
     RECOVERY_KEYWORDS,
 )
 from rag.services import Services
 from rag.state import GraphState
 
-# Single-token domain vocabulary (matched against query tokens) and multi-word
-# domain phrases (matched as substrings) — the latter lets terms like
-# "fund recall" or "beneficiary tracing" register without over-broadening.
-_DOMAIN_TERMS: set[str] = set()
-_DOMAIN_PHRASES: set[str] = set()
+# Domain vocabulary for scope detection. Single-word terms are matched as stems
+# (a query token is in scope when it *starts with* a domain stem, so plurals and
+# inflections — "provisions", "records", "investigators" — are covered without a
+# full stemmer). Multi-word terms are matched as substrings. This mirrors the
+# substring matching the classifier uses, so anything classifiable is in scope.
+_DOMAIN_STEMS: set[str] = set()   # len >= 4, matched by prefix
+_DOMAIN_SHORT: set[str] = set()   # len < 4, matched exact (acronyms: fir, sop, otp)
+_DOMAIN_PHRASES: set[str] = set()  # contain a space, matched as substrings
+
+_EXTRA_TERMS = (
+    "cyber", "cybercrime", "crime", "fraud", "scam", "investigate", "investigation",
+    "complaint", "victim", "accused", "evidence", "police", "officer", "case",
+)
 
 
 def _add_term(term: str) -> None:
+    term = term.lower().strip()
+    if not term:
+        return
     if " " in term:
-        _DOMAIN_PHRASES.add(term.lower())
+        _DOMAIN_PHRASES.add(term)
+    elif len(term) >= 4:
+        _DOMAIN_STEMS.add(term)
     else:
-        _DOMAIN_TERMS.add(term.lower())
+        _DOMAIN_SHORT.add(term)
 
 
-for _kw in CAPABILITY_KEYWORDS.values():
-    for _t in _kw:
-        _add_term(_t)
-for _kw in CATEGORY_KEYWORDS.values():
-    for _t in _kw:
-        _add_term(_t)
-for _t in RECOVERY_KEYWORDS:
+for _src in (CAPABILITY_KEYWORDS.values(), CATEGORY_KEYWORDS.values()):
+    for _kw in _src:
+        for _t in _kw:
+            _add_term(_t)
+for _t in (*RECOVERY_KEYWORDS, *INVESTIGATOR_TERMS, *_EXTRA_TERMS):
     _add_term(_t)
-_DOMAIN_TERMS.update({
-    "cyber", "cybercrime", "crime", "fraud", "scam", "investigate", "investigation",
-    "complaint", "victim", "accused", "evidence", "police", "officer", "case",
-})
+
+
+def _in_scope(query: str) -> bool:
+    low = query.lower()
+    tokens = re.findall(r"[a-z0-9]+", low)
+    if any(t in _DOMAIN_SHORT for t in tokens):
+        return True
+    if any(t.startswith(stem) for t in tokens for stem in _DOMAIN_STEMS):
+        return True
+    if any(phrase in low for phrase in _DOMAIN_PHRASES):
+        return True
+    return bool(re.search(r"\bsection\b|\bu/s\b", query, re.I))
 
 _INJECTION = re.compile(
     r"(ignore (all )?previous instructions|disregard the system|reveal your prompt|"
@@ -68,15 +88,7 @@ def guardrail(state: GraphState, services: Services) -> GraphState:
         state.verifier_report["injection_blocked"] = True
         return state
 
-    low = q.lower()
-    tokens = set(re.findall(r"[a-z0-9]+", low))
-    # In scope if it mentions any domain token, a domain phrase, or a legal cue.
-    in_scope = (
-        bool(tokens & _DOMAIN_TERMS)
-        or any(phrase in low for phrase in _DOMAIN_PHRASES)
-        or bool(re.search(r"\bsection\b|\bu/s\b", q, re.I))
-    )
-    if not in_scope:
+    if not _in_scope(q):
         state.in_scope = False
         state.refusal = _REFUSAL
     return state

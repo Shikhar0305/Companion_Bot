@@ -59,6 +59,24 @@ def _payload(entry: dict[str, Any]) -> dict[str, Any]:
     return {k: v for k, v in entry.items() if k not in _DROP_KEYS}
 
 
+# Sidecar fields whose values are worth making lexically searchable (so a chunk
+# can be retrieved by crime type / offence tag, not just its own prose).
+_SEARCHABLE_KEYS = ("section_name", "crime_categories", "offence_tags", "channels")
+
+
+def _searchable_suffix(meta: dict[str, Any]) -> str:
+    parts: list[str] = []
+    for key in _SEARCHABLE_KEYS:
+        val = meta.get(key)
+        if not val:
+            continue
+        if isinstance(val, (list, tuple)):
+            parts.append(", ".join(str(v) for v in val))
+        else:
+            parts.append(str(val))
+    return (" Related: " + "; ".join(parts) + ".") if parts else ""
+
+
 def enrich_chunks(chunks: list[Chunk], file_basename: str,
                   index: dict[str, dict[str, Any]]) -> int:
     """Attach sidecar metadata to chunks of one source file. Returns #enriched.
@@ -77,8 +95,9 @@ def enrich_chunks(chunks: list[Chunk], file_basename: str,
     enriched = 0
     for c in chunks:
         touched = False
+        suffix = ""
         # 1. Document-level: applies to every chunk of the file.
-        if doc_payload:
+        if doc_meta:
             c.extra_metadata.update(doc_payload)
             touched = True
         # 2. Section-level: applies when the chunk's section number matches.
@@ -86,12 +105,20 @@ def enrich_chunks(chunks: list[Chunk], file_basename: str,
             meta = by_section.get(c.section_number.lower())
             if meta:
                 c.extra_metadata.update(_payload(meta))
+                # Make legal section metadata searchable (crime categories /
+                # offence tags / section name) so a section can be retrieved by
+                # crime type. NOTE: only for section-level (legal) chunks — doing
+                # this for document-level recovery docs makes them over-match
+                # crime-type queries and crowd out the crime decision trees.
+                suffix += _searchable_suffix(meta)
                 if not c.section_title:
                     for k in _SECTION_NAME_KEYS:
                         if meta.get(k):
                             c.section_title = str(meta[k])
                             break
                 touched = True
+        if suffix and "Related:" not in c.text:
+            c.text = c.text.rstrip() + "\n" + suffix.strip()
         if touched:
             enriched += 1
     return enriched

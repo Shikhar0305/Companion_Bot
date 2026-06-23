@@ -6,6 +6,7 @@ import re
 from core.constants import (
     CAPABILITY_KEYWORDS,
     CATEGORY_KEYWORDS,
+    CRIME_SYNONYMS,
     STATUTE_ALIASES,
 )
 from core.types import QueryAnalysis
@@ -42,10 +43,15 @@ def _detect_categories(q: str) -> list[str]:
 
 def _expand(q: str) -> list[str]:
     low = q.lower()
-    expansions = []
+    expansions: list[str] = []
     for alias, full in STATUTE_ALIASES.items():
         if alias in low:
             expansions.extend(full)
+    # Crime-term synonyms bridge everyday phrasing to statute/SOP wording so
+    # lexical retrieval can match (e.g. "malware" -> "computer contaminant").
+    for term, syns in CRIME_SYNONYMS.items():
+        if term in low:
+            expansions.extend(syns)
     return expansions
 
 
