@@ -15,6 +15,8 @@ DOC_TYPES = (
     "circular",   # police circulars
     "decision_tree",  # crime-type investigation decision trees
     "recovery",       # fund-recovery / escalation repositories
+    "forensics",      # digital-forensics procedures (device/mobile/disk/CDR)
+    "procedure",      # generic investigation procedures (intake/FIR/preservation)
 )
 
 # Capability areas the assistant supports (see docs/02-solution-architecture.md)
