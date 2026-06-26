@@ -28,6 +28,29 @@ _SECTION = re.compile(
 _SOP_HEADING = re.compile(
     r"(?:^|\n)\s*(\d+(?:\.\d+){0,2})\s+([A-Z][^\n]{3,90})",
 )
+# A section needs at least this much prose (beyond its heading line) to be kept;
+# heading-only / Table-of-Contents fragments fall below it and are dropped.
+_SOP_MIN_PROSE = 80
+# Sections longer than this are split into overlapping windows for retrieval.
+_SOP_MAX_CHARS = 4000
+
+
+def _window(text: str, size: int, overlap: int = 200) -> list[str]:
+    """Split long text into overlapping windows, preferring whitespace breaks."""
+    out: list[str] = []
+    i = 0
+    n = len(text)
+    while i < n:
+        end = min(i + size, n)
+        if end < n:  # back off to the nearest whitespace so we don't cut a word
+            ws = text.rfind(" ", i + size - overlap, end)
+            if ws > i:
+                end = ws
+        out.append(text[i:end].strip())
+        if end >= n:
+            break
+        i = max(end - overlap, i + 1)
+    return [w for w in out if w]
 
 
 def _hash(text: str) -> str:
@@ -83,29 +106,57 @@ def chunk_legal(text: str, doc_id: str, title: str, doc_type: str = "act") -> li
 
 
 def chunk_sop(text: str, doc_id: str, title: str, doc_type: str = "sop") -> list[Chunk]:
-    """Chunk by heading hierarchy; keep a procedure's steps together."""
+    """Chunk by numbered-heading hierarchy; keep a procedure's steps together.
+
+    Robust against real-world manuals: a multi-page Table of Contents and
+    parent headings whose body is only their child subsections both yield
+    "heading-only" fragments (no prose) — these are dropped, which also removes
+    the duplicate section numbers the TOC would otherwise inject. Oversized
+    sections (e.g. a chapter conclusion running into un-numbered annexures) are
+    split into overlapping windows. chunk_ids are guaranteed unique.
+    """
     matches = list(_SOP_HEADING.finditer(text))
     if not matches:
         return _chunk_fallback(text, doc_id, title, doc_type)
     chunks: list[Chunk] = []
+    seen: set[str] = set()
     for i, m in enumerate(matches):
         start = m.start()
         end = matches[i + 1].start() if i + 1 < len(matches) else len(text)
         body = _strip_page_marks(text[start:end])
+        # Prose below the heading line — TOC entries and bare parent headings
+        # have (almost) none, so we skip them to avoid noise + duplicate ids.
+        nl = body.find("\n")
+        prose = body[nl + 1:].strip() if nl != -1 else ""
+        if len(prose) < _SOP_MIN_PROSE:
+            continue
         sec = m.group(1).strip()
         name = m.group(2).strip()
-        page = _page_for_offset(text, start)
-        cid = f"{doc_id}_sop_{sec.replace('.', '_')}"
-        chunks.append(
-            Chunk(
-                chunk_id=cid, doc_id=doc_id, doc_type=doc_type, title=title,
-                text=body, sop_section=sec, procedure_name=name,
-                page_start=page, page_end=page,
-                parent_chunk_id=f"{doc_id}_sop_{sec.replace('.', '_')}_full",
-                source_hash=_hash(body),
+        page_start = _page_for_offset(text, start)
+        page_end = _page_for_offset(text, max(start, end - 1)) or page_start
+        base = f"{doc_id}_sop_{sec.replace('.', '_')}"
+        pieces = _window(body, _SOP_MAX_CHARS) if len(body) > _SOP_MAX_CHARS else [body]
+        for j, piece in enumerate(pieces):
+            cid = base if len(pieces) == 1 else f"{base}_p{j + 1}"
+            if cid in seen:
+                # A section number that recurs with prose (e.g. body + a later
+                # recap). Disambiguate with a "__rN" suffix — the double
+                # underscore cannot collide with a real subsection slug, which
+                # only ever uses single underscores.
+                k = 2
+                while f"{cid}__r{k}" in seen:
+                    k += 1
+                cid = f"{cid}__r{k}"
+            seen.add(cid)
+            chunks.append(
+                Chunk(
+                    chunk_id=cid, doc_id=doc_id, doc_type=doc_type, title=title,
+                    text=piece, sop_section=sec, procedure_name=name,
+                    page_start=page_start, page_end=page_end,
+                    parent_chunk_id=f"{base}_full", source_hash=_hash(piece),
+                )
             )
-        )
-    return chunks
+    return chunks or _chunk_fallback(text, doc_id, title, doc_type)
 
 
 def _chunk_fallback(text: str, doc_id: str, title: str, doc_type: str,
