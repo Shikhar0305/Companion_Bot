@@ -25,3 +25,6 @@ htmlcov/
 # Models / weights
 *.bin
 *.safetensors
+
+# Regenerated regression reports (baseline.json is the committed contract)
+eval/reports/
