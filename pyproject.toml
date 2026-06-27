@@ -14,7 +14,8 @@ dependencies = [
 
 [project.optional-dependencies]
 # Production backends — install per deployment profile.
-embeddings = ["FlagEmbedding>=1.2"]          # BGE-M3 + BGE-reranker
+embeddings = ["FlagEmbedding>=1.2"]          # BGE-M3 + BGE-reranker (server/build only)
+e5 = ["sentence-transformers>=3.0"]          # multilingual-e5-small (mobile-target embedder)
 vectordb = ["qdrant-client>=1.9"]
 claude = ["anthropic>=0.40"]
 vllm = ["openai>=1.30"]                        # OpenAI-compatible vLLM endpoint

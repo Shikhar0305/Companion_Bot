@@ -71,7 +71,50 @@ class BGEM3Embedder:
         return out["lexical_weights"]
 
 
+class E5SmallEmbedder:
+    """``intfloat/multilingual-e5-small`` (384-d) — the mobile-target embedder.
+
+    E5 is an **asymmetric** retriever: corpus passages must be encoded as
+    ``"passage: " + text`` and queries as ``"query: " + text``. Omitting the
+    prefixes silently collapses retrieval quality, so they are applied **here**,
+    not by callers — the protocol mapping used across the codebase is:
+
+    * ``embed()``     → corpus passages (``ingestion.embed.embed_and_load``)
+    * ``embed_one()`` → a single query (``rag.nodes.retrieve``)
+
+    Embeddings are L2-normalized (E5 expects cosine over unit vectors). Heavy
+    deps (sentence-transformers / torch) are imported lazily so the dev profile
+    and tests load without them.
+    """
+
+    QUERY_PREFIX = "query: "
+    PASSAGE_PREFIX = "passage: "
+
+    def __init__(self, model_name: str | None = None, device: str | None = None) -> None:
+        import os
+
+        from sentence_transformers import SentenceTransformer  # lazy
+
+        name = model_name or os.environ.get("E5_MODEL", "intfloat/multilingual-e5-small")
+        self._model = SentenceTransformer(name, device=device)
+        self.dim = 384
+
+    def _encode(self, texts: list[str]) -> list[list[float]]:
+        vecs = self._model.encode(texts, normalize_embeddings=True)
+        return [list(map(float, v)) for v in vecs]
+
+    def embed(self, texts: list[str]) -> list[list[float]]:
+        """Encode corpus passages (applies the ``passage:`` prefix)."""
+        return self._encode([self.PASSAGE_PREFIX + t for t in texts])
+
+    def embed_one(self, text: str) -> list[float]:
+        """Encode a single query (applies the ``query:`` prefix)."""
+        return self._encode([self.QUERY_PREFIX + text])[0]
+
+
 def build_embedder(name: str) -> Embedder:
+    if name == "e5":
+        return E5SmallEmbedder()
     if name == "bge":
         return BGEM3Embedder()
     return HashingEmbedder()
