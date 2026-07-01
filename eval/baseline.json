@@ -1,13 +1,13 @@
 {
-  "overall": 0.7073,
+  "overall": 0.7805,
   "by_category": {
-    "legal": 0.8,
-    "sop": 0.5714,
-    "recovery": 0.6667,
+    "legal": 0.9,
+    "sop": 0.6429,
+    "recovery": 0.8333,
     "decision_tree": 0.6667,
     "adversarial": 1.0
   },
   "n": 41,
   "embedder": "hash",
-  "generated": "2026-06-27"
+  "generated": "2026-07-01"
 }
