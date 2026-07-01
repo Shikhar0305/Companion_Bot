@@ -26,6 +26,16 @@ from core.types import Chunk
 _SECTION_NAME_KEYS = ("section_name",)
 # Keys never copied into chunk payloads.
 _DROP_KEYS = {"doc_ref"}
+# First-class Chunk fields a sidecar entry may override (Phase 3, sop_metadata.yaml).
+_PROMOTE_KEYS = ("section_type", "topic", "procedure_type", "priority", "keywords")
+
+
+def _promote(chunk: Chunk, entry: dict[str, Any]) -> None:
+    """Copy known metadata keys from a sidecar entry onto first-class Chunk fields
+    (sidecar overrides the heading-auto defaults)."""
+    for k in _PROMOTE_KEYS:
+        if entry.get(k) is not None:
+            setattr(chunk, k, entry[k])
 
 
 def load_sidecar_index(yaml_paths: list[str]) -> dict[str, dict[str, Any]]:
@@ -101,10 +111,13 @@ def enrich_chunks(chunks: list[Chunk], file_basename: str,
             c.extra_metadata.update(doc_payload)
             touched = True
         # 2. Section-level: applies when the chunk's section number matches.
-        if c.section_number:
-            meta = by_section.get(c.section_number.lower())
+        # Legal chunks join on section_number; SOP chunks join on sop_section.
+        sec_key = c.section_number or c.sop_section
+        if sec_key:
+            meta = by_section.get(sec_key.lower())
             if meta:
                 c.extra_metadata.update(_payload(meta))
+                _promote(c, meta)  # sidecar overrides heading-auto SOP metadata
                 # Make legal section metadata searchable (crime categories /
                 # offence tags / section name) so a section can be retrieved by
                 # crime type. NOTE: only for section-level (legal) chunks — doing

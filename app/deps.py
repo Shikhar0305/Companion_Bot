@@ -23,6 +23,8 @@ def _build_services(settings: Settings) -> Services:
         rerank_top_n=settings.rerank_top_n,
         relevance_floor=settings.relevance_floor,
         min_supporting=settings.min_supporting,
+        sop_conceptual_penalty=settings.sop_conceptual_penalty,
+        sop_operational_boost=settings.sop_operational_boost,
     )
     return build_services(
         embedder_name=settings.embedder,

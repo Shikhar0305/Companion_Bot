@@ -21,6 +21,14 @@ class PipelineConfig:
     rerank_top_n: int = 6
     relevance_floor: float = 0.15      # min normalized rerank score to keep a passage
     min_supporting: int = 1            # min passages required to attempt an answer
+    # SOP conceptual-demotion weights (Phase 3): applied to SOP chunks on
+    # operational queries only. conceptual (priority 1) scaled DOWN so operational
+    # procedures surface above background. The operational boost defaults to 1.0
+    # (off): boosting SOP operational chunks was measured to make them outrank the
+    # purpose-built recovery/decision-tree repos on financial queries. Demotion
+    # alone achieves operational-over-conceptual without breaking cross-repo routing.
+    sop_conceptual_penalty: float = 0.5
+    sop_operational_boost: float = 1.0
 
 
 class Services:

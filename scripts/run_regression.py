@@ -59,9 +59,10 @@ def main() -> int:
     ap.add_argument("--update-baseline", action="store_true")
     args = ap.parse_args()
 
-    from eval.regression_set import run_regression
+    from eval.regression_set import measure_sop_ranking, run_regression
     pipeline, embedder = _build_pipeline()
     summary = run_regression(pipeline)
+    sop_diag = measure_sop_ranking(pipeline)
     _write_reports(summary, embedder)
 
     frozen = {"overall": summary["overall"], "by_category": summary["by_category"],
@@ -70,6 +71,9 @@ def main() -> int:
     print(f"\nEmbedder: {embedder}   Overall: {summary['overall']:.1%}   (n={summary['n']})")
     for cat, acc in sorted(summary["by_category"].items()):
         print(f"  {cat:14} {acc:.1%}")
+    print(f"\nSOP diagnostics (Phase 3):")
+    print(f"  operational_top_rate  {sop_diag['operational_top_rate']:.1%}  (top SOP chunk is operational; n={sop_diag['operational_n']})")
+    print(f"  conceptual_safe_rate  {sop_diag['conceptual_safe_rate']:.1%}  (conceptual queries still answered)")
 
     if args.update_baseline:
         with open(BASELINE_PATH, "w") as fh:

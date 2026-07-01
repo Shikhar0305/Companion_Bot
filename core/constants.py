@@ -101,6 +101,43 @@ RECOVERY_KEYWORDS: tuple[str, ...] = (
     "freeze", "recall", "reversal", "beneficiary", "nodal", "helpline", "mule",
 )
 
+# ---------------------------------------------------------------------------
+# SOP section taxonomy (Phase 3 — metadata enrichment / conceptual demotion).
+# Each SOP chunk is classified into a section_type; priority drives retrieval
+# weighting so operational procedures outrank conceptual background on
+# operational queries. Applies to doc_type == "sop" only.
+# ---------------------------------------------------------------------------
+SOP_SECTION_TYPES: tuple[str, ...] = (
+    "conceptual",             # background: intros, definitions, typologies
+    "legal_reference",        # statutory framework discussion
+    "investigation_procedure",
+    "forensic_procedure",
+    "evidence_collection",
+    "financial_investigation",
+    "telecom_investigation",
+    "recovery_procedure",
+    "prosecution",
+)
+
+# Retrieval priority per section_type: 5 = operational core, 4 = prosecution,
+# 3 = legal, 1 = conceptual background.
+SOP_TYPE_PRIORITY: dict[str, int] = {
+    "conceptual": 1,
+    "legal_reference": 3,
+    "prosecution": 4,
+    "investigation_procedure": 5,
+    "forensic_procedure": 5,
+    "evidence_collection": 5,
+    "financial_investigation": 5,
+    "telecom_investigation": 5,
+    "recovery_procedure": 5,
+}
+
+# Operational types (boosted on operational queries).
+SOP_OPERATIONAL_TYPES: frozenset[str] = frozenset(
+    t for t, p in SOP_TYPE_PRIORITY.items() if p >= 4
+)
+
 # Statute aliases used in query expansion (docs/03-rag-architecture.md §3.3 node 2).
 STATUTE_ALIASES: dict[str, tuple[str, ...]] = {
     "bns": ("bharatiya nyaya sanhita",),

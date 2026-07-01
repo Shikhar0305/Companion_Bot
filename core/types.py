@@ -28,6 +28,14 @@ class Chunk:
     sop_section: Optional[str] = None
     procedure_name: Optional[str] = None
     step_range: Optional[str] = None
+    # SOP metadata enrichment (Phase 3). Populated for doc_type == "sop" only,
+    # from heading-auto classification + sidecar overrides. priority drives the
+    # query-aware conceptual-demotion weighting in rerank.
+    section_type: Optional[str] = None
+    topic: Optional[str] = None
+    procedure_type: Optional[str] = None
+    priority: Optional[int] = None
+    keywords: list[str] = field(default_factory=list)
     capability_area: list[str] = field(default_factory=list)
     cybercrime_categories: list[str] = field(default_factory=list)
     jurisdiction: str = "IN"

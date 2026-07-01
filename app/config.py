@@ -34,6 +34,8 @@ class Settings:
     rerank_top_n: int = int(os.environ.get("RERANK_TOP_N", "6"))
     relevance_floor: float = float(os.environ.get("RELEVANCE_FLOOR", "0.15"))
     min_supporting: int = int(os.environ.get("MIN_SUPPORTING", "1"))
+    sop_conceptual_penalty: float = float(os.environ.get("SOP_CONCEPTUAL_PENALTY", "0.5"))
+    sop_operational_boost: float = float(os.environ.get("SOP_OPERATIONAL_BOOST", "1.0"))
 
     auth_enabled: bool = _b("AUTH_ENABLED", False)
     rate_limit_per_min: int = int(os.environ.get("RATE_LIMIT_PER_MIN", "60"))

@@ -28,17 +28,28 @@ pytestmark = pytest.mark.skipif(
 
 
 @pytest.fixture(scope="module")
-def summary():
+def pipeline():
     os.environ.setdefault("CORPUS_ROOT", "data/corpus")
     from app.config import get_settings
     from app.deps import _build_services, _load_corpus, _seed_demo_kb
-    from eval.regression_set import run_regression
     from rag.graph import AnswerPipeline
 
     services = _build_services(get_settings())
     if _load_corpus(services) == 0:
         _seed_demo_kb(services)
-    return run_regression(AnswerPipeline(services))
+    return AnswerPipeline(services)
+
+
+@pytest.fixture(scope="module")
+def summary(pipeline):
+    from eval.regression_set import run_regression
+    return run_regression(pipeline)
+
+
+@pytest.fixture(scope="module")
+def sop_diag(pipeline):
+    from eval.regression_set import measure_sop_ranking
+    return measure_sop_ranking(pipeline)
 
 
 @pytest.fixture(scope="module")
@@ -74,3 +85,14 @@ def test_overall_not_regressed(summary, baseline):
     assert summary["overall"] >= baseline["overall"] - 0.05, (
         f"overall regressed {baseline['overall']:.2%} -> {summary['overall']:.2%}"
     )
+
+
+def test_sop_operational_ranking(sop_diag):
+    # Phase 3: on operational SOP queries the top SOP chunk must be operational
+    # (priority >= 4). Also guards that metadata is actually attached.
+    assert sop_diag["operational_top_rate"] >= 0.85, sop_diag
+
+
+def test_conceptual_queries_not_over_demoted(sop_diag):
+    # Definitional queries must remain answerable despite conceptual demotion.
+    assert sop_diag["conceptual_safe_rate"] == 1.0, sop_diag

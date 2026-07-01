@@ -5,9 +5,43 @@ routes to abstain when too few passages survive.
 """
 from __future__ import annotations
 
+import re
+
+from core.types import RetrievedChunk
 from rag.nodes.verify import extract_legal_refs
 from rag.services import Services
 from rag.state import GraphState
+
+# A query with conceptual intent ("what is X", "define X") must NOT trigger the
+# conceptual-demotion — otherwise legitimate definitional questions break.
+_CONCEPTUAL_QUERY = re.compile(
+    r"\b(what is|what are|what does|define|definition|meaning of|explain|"
+    r"concept of|overview of|introduction to|difference between)\b",
+    re.IGNORECASE,
+)
+
+
+def _apply_sop_priority(query: str, ranked: list[RetrievedChunk], cfg) -> list[RetrievedChunk]:
+    """Query-aware SOP conceptual-demotion / operational-boost (Phase 3).
+
+    Only SOP chunks are touched (legal/decision-tree/recovery are untouched).
+    Conceptual-intent queries are exempt so definitional questions still work.
+    Returns a re-sorted list.
+    """
+    if _CONCEPTUAL_QUERY.search(query):
+        return ranked
+    adjusted: list[RetrievedChunk] = []
+    for rc in ranked:
+        w = 1.0
+        c = rc.chunk
+        if c.doc_type == "sop" and c.priority is not None:
+            if c.priority <= 1:
+                w = cfg.sop_conceptual_penalty      # demote background
+            elif c.priority >= 4:
+                w = cfg.sop_operational_boost        # boost operational procedures
+        adjusted.append(RetrievedChunk(c, rc.score * w, rc.source))
+    adjusted.sort(key=lambda r: r.score, reverse=True)
+    return adjusted
 
 
 def _queried_section_present(query: str, survivors) -> bool:
@@ -33,7 +67,12 @@ def rerank(state: GraphState, services: Services) -> GraphState:
         return state
 
     query = state.analysis.rewritten_query if state.analysis else state.query
-    ranked = services.reranker.rerank(query, state.retrieved, cfg.rerank_top_n)
+    # Rerank the full candidate pool, apply SOP priority weighting, then take the
+    # top-N — so a demoted conceptual chunk can yield its slot to an operational
+    # one that was ranked just outside the cut. (For non-SOP results this is
+    # identical to reranking straight to top-N.)
+    ranked = services.reranker.rerank(query, state.retrieved, len(state.retrieved))
+    ranked = _apply_sop_priority(query, ranked, cfg)[: cfg.rerank_top_n]
 
     survivors = [rc for rc in ranked if rc.score >= cfg.relevance_floor]
     if len(survivors) < cfg.min_supporting:

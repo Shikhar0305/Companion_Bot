@@ -1,0 +1,119 @@
+# SOP metadata sidecar (Phase 3, layer 2 — curated overrides).
+#
+# Heading-anchored auto-classification (ingestion/sop_classify.py) tags every SOP
+# chunk. These entries OVERRIDE that default for high-value operational sections
+# where the heading is ambiguous or where we want to force operational priority,
+# a precise topic, or BM25 keywords (used later in Phase 4). Joined to SOP chunks
+# by sop_section (the `section_number` field below). Not authoritative content —
+# retrieval metadata only; SME-reviewable.
+sections:
+  # --- Evidence collection / chain of custody ---
+  - doc_ref: SOPCCHQ.sop.txt
+    section_number: "5.5"
+    section_type: evidence_collection
+    priority: 5
+    topic: first_responder
+    procedure_type: collection
+    keywords: [first responder, scene, secure, preserve]
+  - doc_ref: SOPCCHQ.sop.txt
+    section_number: "5.14"
+    section_type: evidence_collection
+    priority: 5
+    topic: chain_of_custody
+    procedure_type: collection
+    keywords: [chain of custody, custody, transfer, integrity]
+  - doc_ref: SOPCCHQ.sop.txt
+    section_number: "5.16.1"
+    section_type: evidence_collection
+    priority: 5
+    topic: first_responder
+    procedure_type: collection
+    keywords: [first responder, checklist, crime scene]
+  - doc_ref: SOPCCHQ.sop.txt
+    section_number: "4.14"
+    section_type: evidence_collection
+    priority: 5
+    topic: chain_of_custody
+    procedure_type: collection
+    keywords: [chain of custody, transfer]
+  - doc_ref: SOPCCHQ.sop.txt
+    section_number: "19.11.2"
+    section_type: evidence_collection
+    priority: 5
+    topic: device_seizure
+    procedure_type: collection
+    keywords: [seizure, electronic devices, seize]
+  # --- Digital forensics ---
+  - doc_ref: SOPCCHQ.sop.txt
+    section_number: "8.16"
+    section_type: forensic_procedure
+    priority: 5
+    topic: write_blocker
+    procedure_type: acquisition
+    keywords: [write blocker, write blockers, hardware, imaging]
+  - doc_ref: SOPCCHQ.sop.txt
+    section_number: "8.13"
+    section_type: forensic_procedure
+    priority: 5
+    topic: disk_imaging
+    procedure_type: acquisition
+    keywords: [static acquisition, dead acquisition, imaging]
+  - doc_ref: SOPCCHQ.sop.txt
+    section_number: "9.6.1"
+    section_type: forensic_procedure
+    priority: 5
+    topic: disk_imaging
+    procedure_type: acquisition
+    keywords: [dead-box imaging, disk image, hash]
+  - doc_ref: SOPCCHQ.sop.txt
+    section_number: "11.8.1"
+    section_type: forensic_procedure
+    priority: 5
+    topic: sim_forensics
+    procedure_type: acquisition
+    keywords: [sim card, sim, extraction]
+  # --- Telecom ---
+  - doc_ref: SOPCCHQ.sop.txt
+    section_number: "11.6.1"
+    section_type: telecom_investigation
+    priority: 5
+    topic: cdr_request
+    procedure_type: request
+    keywords: [cdr, call detail records, telecom, subscriber]
+  # --- Preservation requests / platform ---
+  - doc_ref: SOPCCHQ.sop.txt
+    section_number: "5.10.3"
+    section_type: evidence_collection
+    priority: 5
+    topic: preservation_request
+    procedure_type: request
+    keywords: [preservation request, preserve, platform]
+  - doc_ref: SOPCCHQ.sop.txt
+    section_number: "12.36"
+    section_type: evidence_collection
+    priority: 5
+    topic: preservation_request
+    procedure_type: request
+    keywords: [preservation request, legal necessity, timing]
+  - doc_ref: SOPCCHQ.sop.txt
+    section_number: "12.36.1"
+    section_type: evidence_collection
+    priority: 5
+    topic: preservation_request
+    procedure_type: request
+    keywords: [preservation request, content, format]
+  # --- Prosecution / charge sheet ---
+  - doc_ref: SOPCCHQ.sop.txt
+    section_number: "22.10"
+    section_type: prosecution
+    priority: 4
+    topic: charge_sheet
+    procedure_type: filing
+    keywords: [chargesheet, charge sheet, final report]
+  - doc_ref: SOPCCHQ.sop.txt
+    section_number: "5.7"
+    section_type: prosecution
+    priority: 4
+    topic: charge_sheet
+    procedure_type: filing
+    keywords: [case diary, charge sheet, presentation]

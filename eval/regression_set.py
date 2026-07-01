@@ -113,3 +113,52 @@ def run_regression(pipeline, cases: list[RegressionCase] | None = None) -> dict:
     by_category = {c: round(by_cat_pass[c] / by_cat_total[c], 4) for c in by_cat_total}
     overall = round(sum(r.passed for r in results) / len(results), 4)
     return {"overall": overall, "by_category": by_category, "n": len(results), "results": results}
+
+
+# --- Phase 3 diagnostics: operational ranking + conceptual demotion ----------
+
+# Operational SOP queries — the top-ranked SOP chunk should be an operational
+# procedure (priority >= 4), not conceptual background.
+SOP_OPERATIONAL_PROBES = [
+    "how to maintain chain of custody for digital evidence",
+    "steps to seize a mobile phone as evidence",
+    "how to image a hard disk forensically",
+    "how to obtain call detail records from a telecom operator",
+    "how to issue a data preservation request to a platform",
+    "how to prepare a charge sheet for a cybercrime case",
+    "first responder actions at a digital crime scene",
+    "how to use a write blocker during acquisition",
+]
+
+# Conceptual-intent queries — must NOT be over-demoted into abstention.
+SOP_CONCEPTUAL_PROBES = [
+    "what is cybercrime",
+    "define electronic evidence",
+    "what is the meaning of chain of custody",
+]
+
+
+def measure_sop_ranking(pipeline) -> dict:
+    """Measure operational ranking and conceptual-demotion safety.
+
+    * operational_top_rate: fraction of operational probes whose top-ranked SOP
+      chunk is operational (priority >= 4).
+    * conceptual_safe_rate: fraction of conceptual probes still answered (not
+      abstained) — guards against over-demotion breaking definitional queries.
+    """
+    op_ok = op_total = 0
+    for q in SOP_OPERATIONAL_PROBES:
+        st = pipeline.run(q)
+        sop = [rc for rc in (st.reranked or []) if rc.chunk.doc_type == "sop"]
+        if not sop:
+            continue
+        op_total += 1
+        if (sop[0].chunk.priority or 0) >= 4:
+            op_ok += 1
+
+    safe = sum(1 for q in SOP_CONCEPTUAL_PROBES if not pipeline.run(q).answer.abstained)
+    return {
+        "operational_top_rate": round(op_ok / op_total, 4) if op_total else 0.0,
+        "operational_n": op_total,
+        "conceptual_safe_rate": round(safe / len(SOP_CONCEPTUAL_PROBES), 4),
+    }

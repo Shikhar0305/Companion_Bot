@@ -11,6 +11,7 @@ import re
 from dataclasses import dataclass
 
 from core.types import Chunk
+from ingestion.sop_classify import classify as _classify_sop
 
 _PAGE_MARK = re.compile(r"\[\[PAGE (\d+)\]\]")
 # Markdown ATX heading: capture level (#) and heading text.
@@ -135,6 +136,7 @@ def chunk_sop(text: str, doc_id: str, title: str, doc_type: str = "sop") -> list
         page_start = _page_for_offset(text, start)
         page_end = _page_for_offset(text, max(start, end - 1)) or page_start
         base = f"{doc_id}_sop_{sec.replace('.', '_')}"
+        meta = _classify_sop(sec, name)  # heading-anchored section_type/priority/...
         pieces = _window(body, _SOP_MAX_CHARS) if len(body) > _SOP_MAX_CHARS else [body]
         for j, piece in enumerate(pieces):
             cid = base if len(pieces) == 1 else f"{base}_p{j + 1}"
@@ -154,6 +156,9 @@ def chunk_sop(text: str, doc_id: str, title: str, doc_type: str = "sop") -> list
                     text=piece, sop_section=sec, procedure_name=name,
                     page_start=page_start, page_end=page_end,
                     parent_chunk_id=f"{base}_full", source_hash=_hash(piece),
+                    section_type=meta["section_type"], priority=meta["priority"],
+                    procedure_type=meta["procedure_type"], topic=meta["topic"],
+                    keywords=meta["keywords"],
                 )
             )
     return chunks or _chunk_fallback(text, doc_id, title, doc_type)
