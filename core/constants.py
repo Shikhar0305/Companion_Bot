@@ -128,6 +128,10 @@ INVESTIGATOR_TERMS: tuple[str, ...] = (
     "record", "preserv", "retention", "subscriber", "service", "provid",
     "platform", "telecom", "metadata", "seiz", "custod", "forens", "acquisition",
     "imaging", "device", "digital", "intermediar",
+    # forensic acquisition tools & media (write blocker, cloning, extraction)
+    "blocker", "clon", "extract", "bitstream", "sim", "usb",
+    # telecom / service-provider records (IP logs, ISP, CDR/IPDR, tower dumps)
+    "isp", "ip", "cdr", "ipdr", "imei", "imsi", "tower", "logs", "geotag",
     # complainant / reporting
     "complain", "victim", "report", "register", "intake", "statement", "witness",
     "informant",
