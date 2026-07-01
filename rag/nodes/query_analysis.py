@@ -16,10 +16,10 @@ from rag.state import GraphState
 # Capability area → doc_type filter (docs/02 §2.4).
 _AREA_DOC_TYPES = {
     "legal": ["act", "sanhita"],
-    "forensics": ["sop", "manual", "decision_tree"],
+    "forensics": ["forensics", "sop", "manual", "decision_tree"],
     "osint": ["playbook", "manual", "sop"],
     "financial": ["sop", "advisory", "recovery", "decision_tree"],
-    "investigation": ["sop", "manual", "decision_tree", "recovery"],
+    "investigation": ["procedure", "sop", "manual", "decision_tree", "recovery"],
 }
 
 

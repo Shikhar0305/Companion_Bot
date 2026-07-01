@@ -15,6 +15,8 @@ DOC_TYPES = (
     "circular",   # police circulars
     "decision_tree",  # crime-type investigation decision trees
     "recovery",       # fund-recovery / escalation repositories
+    "forensics",      # digital-forensics procedures (device/mobile/disk/CDR)
+    "procedure",      # generic investigation procedures (intake/FIR/preservation)
 )
 
 # Capability areas the assistant supports (see docs/02-solution-architecture.md)
@@ -77,17 +79,22 @@ CATEGORY_KEYWORDS: dict[str, tuple[str, ...]] = {
 # Capability-area cues for query classification.
 CAPABILITY_KEYWORDS: dict[str, tuple[str, ...]] = {
     "legal": ("section", "punishment", "offence", "offense", "law", "act", "sanhita",
-              "bns", "bnss", "ipc", "crpc", "provision", "bailable", "cognizable"),
+              "bns", "bnss", "ipc", "crpc", "provision", "bailable", "cognizable",
+              "certificate", "admissibility", "admissible", "electronic record",
+              "proof of", "evidence act", "sakshya", "statute", "penal"),
     "forensics": ("seizure", "chain of custody", "preservation", "acquisition",
-                  "forensic", "hash", "imaging", "device", "evidence", "hard disk"),
+                  "forensic", "hash", "imaging", "device", "evidence", "hard disk",
+                  "mobile", "extraction", "write blocker", "disk", "volatile"),
     "osint": ("osint", "ip address", "domain", "whois", "username", "geolocation",
               "social media", "open source"),
     "financial": ("upi", "transaction", "freeze", "bank", "account", "money trail",
                   "npci", "rbi", "refund", "ledger", "beneficiary",
                   "1930", "ncrp", "recall", "reversal", "chargeback", "mule",
-                  "nodal", "wallet", "recovery", "helpline"),
+                  "nodal", "wallet", "recovery", "helpline", "trace", "trail",
+                  "fund", "remittance", "proceeds"),
     "investigation": ("procedure", "steps", "checklist", "fir", "investigation",
-                      "next step", "how to investigate", "sop"),
+                      "next step", "how to investigate", "sop", "intake",
+                      "complainant", "complaint", "initial report"),
 }
 
 # Recovery-domain terminology (financial-fraud recovery workflow). Used by the
@@ -156,7 +163,10 @@ CRIME_SYNONYMS: dict[str, tuple[str, ...]] = {
     "sexual exploitation": ("obscene", "pornographic", "csam", "child", "sexually explicit"),
     "service provider": ("intermediary", "platform", "telecom", "subscriber", "ip logs"),
     "trace funds": ("money trail", "transaction trail", "beneficiary", "financial trail"),
-    "mule account": ("layered account", "downstream account", "beneficiary account"),
+    "mule account": ("mule account investigation", "layered account", "downstream account"),
+    "mule": ("mule account investigation",),
+    "trace funds": ("beneficiary tracing", "money trail", "transaction trail"),
+    "trace": ("beneficiary tracing", "transaction trail"),
     "trading scam": ("fake trading platform", "investment fraud"),
     "loan app": ("instant loan", "loan application fraud"),
     # Bare crime-name cues that steer decision-tree queries to the right tree.
@@ -166,6 +176,15 @@ CRIME_SYNONYMS: dict[str, tuple[str, ...]] = {
     "gambling": ("online gambling fraud",),
     "deepfake": ("deepfake fraud",),
     "sextortion": ("sextortion",),
+    # Job-fraud aliases -> Fake Job Scam decision tree.
+    "job fraud": ("fake job scam", "job scam"),
+    "online job": ("fake job scam", "job scam"),
+    "employment fraud": ("fake job scam", "job scam"),
+    "work from home": ("fake job scam", "job scam"),
+    "job offer": ("fake job scam", "job scam"),
+    # Evidence-law cues -> BSA admissibility/certificate.
+    "electronic evidence": ("admissibility", "certificate", "electronic record", "section 63"),
+    "digital evidence certificate": ("admissibility", "section 63"),
 }
 
 # Default abstention message — must be returned verbatim when unsupported.

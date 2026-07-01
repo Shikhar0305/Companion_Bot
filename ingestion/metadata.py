@@ -14,6 +14,7 @@ _DEFAULT_AREA = {
     "sop": "investigation", "manual": "forensics",
     "playbook": "osint", "advisory": "financial", "circular": "investigation",
     "decision_tree": "investigation", "recovery": "financial",
+    "forensics": "forensics", "procedure": "investigation",
 }
 
 
