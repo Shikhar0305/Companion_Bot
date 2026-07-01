@@ -25,8 +25,13 @@ def extract_pdf(path: str, ocr_lang: str = "eng+hin") -> list[Page]:
     for i, page in enumerate(doc, start=1):
         text = page.get_text("text") or ""
         if len(text.strip()) < 40:  # likely scanned → OCR
-            text = _ocr_page(page, ocr_lang)
-            pages.append(Page(i, text, needs_ocr=True))
+            try:
+                ocr = _ocr_page(page, ocr_lang)
+            except Exception:  # noqa: BLE001 - OCR deps absent or page unrenderable
+                # Degrade gracefully: a native-text PDF with the odd blank /
+                # cover / divider page should still ingest without OCR installed.
+                ocr = ""
+            pages.append(Page(i, ocr or text, needs_ocr=bool(ocr)))
         else:
             pages.append(Page(i, text, needs_ocr=False))
     doc.close()

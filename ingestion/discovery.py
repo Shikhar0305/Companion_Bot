@@ -29,12 +29,17 @@ _FOLDER_DOC_TYPE = {
     "legal_repository": "act",
     "decision_trees": "decision_tree",
     "recovery_repository": "recovery",
+    "sop_repository": "sop",
 }
 # Slugs within legal_repository that are sanhitas/adhiniyams rather than "act".
 _SANHITA_SLUGS = {"bns", "bnss", "bsa"}
 
 _MD_EXTS = {".md", ".markdown"}
 _PDF_EXTS = {".pdf"}
+# Pre-extracted, page-tagged plain text (e.g. the SOP artifact built by
+# scripts/extract_sop.py). Ingested via the structure-aware text path so page
+# markers survive — no PyMuPDF needed at runtime.
+_TXT_EXTS = {".txt"}
 _YAML_EXTS = {".yaml", ".yml"}
 _FIRST_H1 = re.compile(r"(?m)^#\s+(.+?)\s*$")
 
@@ -81,12 +86,20 @@ def discover_corpus(root: str = DEFAULT_CORPUS_ROOT) -> tuple[list[DiscoveredSou
             if ext in _YAML_EXTS:
                 sidecars.append(path)
                 continue
-            if ext not in _MD_EXTS and ext not in _PDF_EXTS:
+            if ext not in _MD_EXTS and ext not in _PDF_EXTS and ext not in _TXT_EXTS:
                 continue
             stem = os.path.splitext(fname)[0]
+            # A ".sop.txt" artifact has a doubled extension; drop the inner ".sop".
+            if stem.lower().endswith(".sop"):
+                stem = stem[:-4]
             slug = _slug(stem)
             doc_type = _doc_type(folder, slug)
-            fmt = "md" if ext in _MD_EXTS else "pdf"
+            if ext in _MD_EXTS:
+                fmt = "md"
+            elif ext in _TXT_EXTS:
+                fmt = "text"
+            else:
+                fmt = "pdf"
             title = _title_from_markdown(path, stem) if fmt == "md" else stem.replace("_", " ")
             spec = SourceSpec(path=path, doc_id=slug, title=title, doc_type=doc_type)
             sources.append(DiscoveredSource(spec=spec, fmt=fmt))

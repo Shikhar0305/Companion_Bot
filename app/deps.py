@@ -75,7 +75,7 @@ def _load_corpus(services: Services) -> int:
     scripts/ingest_seed_corpus.py builds. Returns 0 when no corpus is present.
     """
     from ingestion.discovery import discover_corpus
-    from ingestion.pipeline import process_markdown, process_pdf
+    from ingestion.pipeline import process_markdown, process_pdf, process_textfile
     from ingestion.sidecar import enrich_chunks, load_sidecar_index
 
     root = os.environ.get("CORPUS_ROOT", "data/corpus")
@@ -86,7 +86,12 @@ def _load_corpus(services: Services) -> int:
     all_chunks = []
     for src in sources:
         try:
-            chunks = process_markdown(src.spec) if src.fmt == "md" else process_pdf(src.spec)
+            if src.fmt == "md":
+                chunks = process_markdown(src.spec)
+            elif src.fmt == "text":
+                chunks = process_textfile(src.spec)
+            else:
+                chunks = process_pdf(src.spec)
         except Exception:  # noqa: BLE001 - skip unreadable file, keep loading the rest
             continue
         enrich_chunks(chunks, os.path.basename(src.spec.path), index)

@@ -48,6 +48,19 @@ def process_markdown(spec: SourceSpec) -> list[Chunk]:
     return process_text(raw, spec, is_markdown=True)
 
 
+def process_textfile(spec: SourceSpec) -> list[Chunk]:
+    """Full pipeline from a pre-extracted, page-tagged ``.txt`` artifact.
+
+    Pure stdlib (no PyMuPDF). The file is expected to carry ``[[PAGE n]]``
+    markers and the source's native headings, so the structure-aware chunker
+    (e.g. ``chunk_sop`` for the SOP) recovers section numbers and page numbers
+    just as it would from the original PDF.
+    """
+    with open(spec.path, encoding="utf-8") as fh:
+        raw = fh.read()
+    return process_text(raw, spec, is_markdown=False)
+
+
 def process_pdf(spec: SourceSpec, ocr_lang: str = "eng+hin") -> list[Chunk]:
     """Full pipeline from a PDF path (requires PyMuPDF; imported lazily)."""
     from ingestion.extract import extract_pdf, pages_to_text
