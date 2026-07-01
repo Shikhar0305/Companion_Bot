@@ -8,11 +8,13 @@ imported lazily.  Both honour metadata filters.
 from __future__ import annotations
 
 import math
+import os
 import re
 import uuid
 from typing import Optional, Protocol
 
 from core.types import Chunk, RetrievedChunk
+from rag.retrieval.bm25 import BM25Index
 from rag.retrieval.embeddings import Embedder
 from rag.retrieval.fusion import reciprocal_rank_fusion
 
@@ -57,24 +59,46 @@ class VectorStore(Protocol):
 
 
 class InMemoryVectorStore:
-    """Hybrid in-memory store (dense + lexical, fused with RRF)."""
+    """Hybrid in-memory store: dense cosine + a lexical channel, fused with RRF.
+
+    The lexical channel is selectable via ``HYBRID_SPARSE``:
+    * ``overlap`` (default) — query-term overlap count (the original behaviour);
+    * ``bm25`` — Okapi BM25 (IDF-weighted), which retrieves rare distinctive
+      terms the dense channel misses. BM25's benefit requires a *semantic* dense
+      channel (e5) to agree with it; under the hashing dev embedder the noisy
+      dense channel dilutes it in RRF, so it is off by default until validated
+      on e5.
+    """
 
     def __init__(self) -> None:
         self._chunks: dict[str, Chunk] = {}
         self._vectors: dict[str, list[float]] = {}
         self._tokens: dict[str, set[str]] = {}
+        self._bm25 = BM25Index()
+        self._sparse_mode = os.environ.get("HYBRID_SPARSE", "overlap").lower()
 
     def upsert(self, chunks: list[Chunk], vectors: list[list[float]]) -> None:
         for chunk, vec in zip(chunks, vectors):
             self._chunks[chunk.chunk_id] = chunk
             self._vectors[chunk.chunk_id] = vec
             self._tokens[chunk.chunk_id] = set(_TOKEN.findall(chunk.text.lower()))
+            self._bm25.add(chunk.chunk_id, chunk.text, chunk.keywords)
 
     def get(self, chunk_id: str) -> Optional[Chunk]:
         return self._chunks.get(chunk_id)
 
     def count(self) -> int:
         return len(self._chunks)
+
+    def by_section(self, refs: set[str], doc_types: set[str]) -> list[Chunk]:
+        """Exact section-number lookup (legal fast-path). Returns matching chunks
+        whose section_number is one of ``refs`` and doc_type is in ``doc_types``."""
+        refs = {r.lower() for r in refs}
+        return [
+            c for c in self._chunks.values()
+            if c.section_number and c.section_number.lower() in refs
+            and c.doc_type in doc_types
+        ]
 
     def search(
         self, query_text: str, query_vector: list[float], k: int = 20,
@@ -83,21 +107,24 @@ class InMemoryVectorStore:
         candidates = [c for c in self._chunks.values() if _matches_filter(c, filters)]
         if not candidates:
             return []
-        q_tokens = set(_TOKEN.findall(query_text.lower()))
+        cand_ids = [c.chunk_id for c in candidates]
 
         dense_ranked = sorted(
-            candidates,
-            key=lambda c: _cosine(query_vector, self._vectors[c.chunk_id]),
+            cand_ids,
+            key=lambda cid: _cosine(query_vector, self._vectors[cid]),
             reverse=True,
         )
-        sparse_ranked = sorted(
-            candidates,
-            key=lambda c: len(q_tokens & self._tokens[c.chunk_id]),
-            reverse=True,
-        )
-        fused = reciprocal_rank_fusion(
-            [[c.chunk_id for c in dense_ranked], [c.chunk_id for c in sparse_ranked]]
-        )
+        if self._sparse_mode == "bm25":
+            bm25_scores = self._bm25.score(query_text, cand_ids)
+            sparse_ranked = sorted(
+                cand_ids, key=lambda cid: bm25_scores.get(cid, 0.0), reverse=True
+            )
+        else:  # overlap (default)
+            q_tokens = set(_TOKEN.findall(query_text.lower()))
+            sparse_ranked = sorted(
+                cand_ids, key=lambda cid: len(q_tokens & self._tokens[cid]), reverse=True
+            )
+        fused = reciprocal_rank_fusion([dense_ranked, sparse_ranked])
         ordered = sorted(fused.items(), key=lambda x: x[1], reverse=True)[:k]
         return [RetrievedChunk(chunk=self._chunks[cid], score=score, source="hybrid")
                 for cid, score in ordered]

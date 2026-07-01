@@ -19,6 +19,19 @@ _CONCEPTUAL_QUERY = re.compile(
     r"concept of|overview of|introduction to|difference between)\b",
     re.IGNORECASE,
 )
+# ...but an operational cue overrides the exemption: "what is the ROLE of / the
+# PROCEDURE for" is an operational question and must still demote conceptual
+# background (e.g. "what is the role of the 1930 helpline" -> the recovery repo,
+# not the SOP's conceptual overview of 1930).
+_OPERATIONAL_CUE = re.compile(
+    r"\b(role of|procedure|steps|process|how to|how do|obtain|request|freeze|"
+    r"trace|seize|collect|prepare|workflow|investigate|recover|maintain|conduct)\b",
+    re.IGNORECASE,
+)
+
+
+def _is_conceptual_query(query: str) -> bool:
+    return bool(_CONCEPTUAL_QUERY.search(query)) and not _OPERATIONAL_CUE.search(query)
 
 
 def _apply_sop_priority(query: str, ranked: list[RetrievedChunk], cfg) -> list[RetrievedChunk]:
@@ -28,7 +41,7 @@ def _apply_sop_priority(query: str, ranked: list[RetrievedChunk], cfg) -> list[R
     Conceptual-intent queries are exempt so definitional questions still work.
     Returns a re-sorted list.
     """
-    if _CONCEPTUAL_QUERY.search(query):
+    if _is_conceptual_query(query):
         return ranked
     adjusted: list[RetrievedChunk] = []
     for rc in ranked:
