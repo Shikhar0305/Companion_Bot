@@ -7,6 +7,12 @@ _MULTISPACE = re.compile(r"[ \t]+")
 _MULTINEWLINE = re.compile(r"\n{3,}")
 _HYPHEN_BREAK = re.compile(r"(\w)-\n(\w)")
 _PAGE_NUM_LINE = re.compile(r"^\s*(page\s+)?\d+\s*$", re.IGNORECASE | re.MULTILINE)
+# Academic footnote reference markers like "[42]" litter the SOP source. They are
+# not knowledge content, and — critically — the grounding verifier parses "[n]"
+# as a citation marker, so a passage quoted verbatim (by the LLM or the dev stub)
+# smuggles the source's footnote numbers into the answer and trips the gate. Strip
+# them here. The negative lookarounds spare "[[PAGE n]]" chunker markers.
+_FOOTNOTE_MARK = re.compile(r"(?<!\[)\[\d{1,4}\](?!\])")
 
 # Common OCR repairs (extend as the corpus dictates).
 _OCR_FIXES = {
@@ -22,6 +28,7 @@ def clean_text(text: str) -> str:
         text = text.replace(bad, good)
     text = _HYPHEN_BREAK.sub(r"\1\2", text)        # de-hyphenate across line breaks
     text = _PAGE_NUM_LINE.sub("", text)             # strip bare page-number lines
+    text = _FOOTNOTE_MARK.sub("", text)             # strip "[n]" footnote references
     text = _MULTISPACE.sub(" ", text)
     text = _MULTINEWLINE.sub("\n\n", text)
     return text.strip()

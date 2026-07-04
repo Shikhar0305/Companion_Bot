@@ -77,7 +77,9 @@ CATEGORY_KEYWORDS: dict[str, tuple[str, ...]] = {
 # Capability-area cues for query classification.
 CAPABILITY_KEYWORDS: dict[str, tuple[str, ...]] = {
     "legal": ("section", "punishment", "offence", "offense", "law", "act", "sanhita",
-              "bns", "bnss", "ipc", "crpc", "provision", "bailable", "cognizable"),
+              "bns", "bnss", "ipc", "crpc", "provision", "bailable", "cognizable",
+              "certificate", "admissibility", "admissible", "electronic record",
+              "proof of", "evidence act", "sakshya", "statute", "penal"),
     "forensics": ("seizure", "chain of custody", "preservation", "acquisition",
                   "forensic", "hash", "imaging", "device", "evidence", "hard disk"),
     "osint": ("osint", "ip address", "domain", "whois", "username", "geolocation",
@@ -99,6 +101,18 @@ RECOVERY_KEYWORDS: tuple[str, ...] = (
     "crypto asset recovery", "wallet tracing", "fund recovery",
     # single-token aliases that may appear standalone in queries
     "freeze", "recall", "reversal", "beneficiary", "nodal", "helpline", "mule",
+)
+
+# High-precision cues for case-documentation / intake procedures that live in the
+# SOP repository. When one of these fires (and no stronger legal/financial signal
+# is present), the query is routed SOP-first so clean but off-target decision-tree
+# / recovery passages cannot out-rank the correct SOP section (docs/02 §2.4). Kept
+# deliberately narrow and disjoint from decision-tree / recovery / legal wording so
+# routing for those repositories is untouched.
+SOP_PROCEDURAL_CUES: tuple[str, ...] = (
+    "complainant", "charge sheet", "chargesheet", "charge-sheet", "case diary",
+    "case file", "seizure memo", "record statement", "statement recording",
+    "supervisory", "intake",
 )
 
 # Statute aliases used in query expansion (docs/03-rag-architecture.md §3.3 node 2).
@@ -128,6 +142,10 @@ INVESTIGATOR_TERMS: tuple[str, ...] = (
     "record", "preserv", "retention", "subscriber", "service", "provid",
     "platform", "telecom", "metadata", "seiz", "custod", "forens", "acquisition",
     "imaging", "device", "digital", "intermediar",
+    # forensic acquisition tools & media (write blocker, cloning, extraction)
+    "blocker", "clon", "extract", "bitstream", "sim", "usb",
+    # telecom / service-provider records (IP logs, ISP, CDR/IPDR, tower dumps)
+    "isp", "ip", "cdr", "ipdr", "imei", "imsi", "tower", "logs", "geotag",
     # complainant / reporting
     "complain", "victim", "report", "register", "intake", "statement", "witness",
     "informant",
