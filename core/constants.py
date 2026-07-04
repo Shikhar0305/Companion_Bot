@@ -77,7 +77,9 @@ CATEGORY_KEYWORDS: dict[str, tuple[str, ...]] = {
 # Capability-area cues for query classification.
 CAPABILITY_KEYWORDS: dict[str, tuple[str, ...]] = {
     "legal": ("section", "punishment", "offence", "offense", "law", "act", "sanhita",
-              "bns", "bnss", "ipc", "crpc", "provision", "bailable", "cognizable"),
+              "bns", "bnss", "ipc", "crpc", "provision", "bailable", "cognizable",
+              "certificate", "admissibility", "admissible", "electronic record",
+              "proof of", "evidence act", "sakshya", "statute", "penal"),
     "forensics": ("seizure", "chain of custody", "preservation", "acquisition",
                   "forensic", "hash", "imaging", "device", "evidence", "hard disk"),
     "osint": ("osint", "ip address", "domain", "whois", "username", "geolocation",
