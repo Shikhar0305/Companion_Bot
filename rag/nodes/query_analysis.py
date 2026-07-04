@@ -7,6 +7,7 @@ from core.constants import (
     CAPABILITY_KEYWORDS,
     CATEGORY_KEYWORDS,
     CRIME_SYNONYMS,
+    SOP_PROCEDURAL_CUES,
     STATUTE_ALIASES,
 )
 from core.types import QueryAnalysis
@@ -30,6 +31,11 @@ def _classify_capability(q: str) -> str:
         scores[area] = sum(1 for kw in kws if kw in low)
     best = max(scores, key=scores.get)
     return best if scores[best] > 0 else "investigation"
+
+
+def _is_sop_procedural(q: str) -> bool:
+    low = q.lower()
+    return any(cue in low for cue in SOP_PROCEDURAL_CUES)
 
 
 def _detect_categories(q: str) -> list[str]:
@@ -61,11 +67,21 @@ def query_analysis(state: GraphState, services: Services) -> GraphState:
     categories = _detect_categories(q)
     expansions = _expand(q)
     rewritten = q if not expansions else q + " (" + "; ".join(expansions) + ")"
+
+    doc_types = _AREA_DOC_TYPES.get(area, [])
+    # Case-documentation / intake questions land in the weak-signal "investigation"
+    # bucket, whose broad filter lets clean decision-tree / recovery passages
+    # out-rank the correct SOP section. Narrow those to SOP-first so the right
+    # repository wins; only applied to the default bucket, never over-riding a
+    # confident legal/financial/osint classification.
+    if area == "investigation" and _is_sop_procedural(q):
+        doc_types = ["sop", "manual"]
+
     state.analysis = QueryAnalysis(
         rewritten_query=rewritten,
         capability_area=area,
         cybercrime_categories=categories,
         expansions=expansions,
-        doc_type_filter=_AREA_DOC_TYPES.get(area, []),
+        doc_type_filter=doc_types,
     )
     return state
