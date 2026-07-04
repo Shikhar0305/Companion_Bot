@@ -101,6 +101,18 @@ RECOVERY_KEYWORDS: tuple[str, ...] = (
     "freeze", "recall", "reversal", "beneficiary", "nodal", "helpline", "mule",
 )
 
+# High-precision cues for case-documentation / intake procedures that live in the
+# SOP repository. When one of these fires (and no stronger legal/financial signal
+# is present), the query is routed SOP-first so clean but off-target decision-tree
+# / recovery passages cannot out-rank the correct SOP section (docs/02 §2.4). Kept
+# deliberately narrow and disjoint from decision-tree / recovery / legal wording so
+# routing for those repositories is untouched.
+SOP_PROCEDURAL_CUES: tuple[str, ...] = (
+    "complainant", "charge sheet", "chargesheet", "charge-sheet", "case diary",
+    "case file", "seizure memo", "record statement", "statement recording",
+    "supervisory", "intake",
+)
+
 # Statute aliases used in query expansion (docs/03-rag-architecture.md §3.3 node 2).
 STATUTE_ALIASES: dict[str, tuple[str, ...]] = {
     "bns": ("bharatiya nyaya sanhita",),
