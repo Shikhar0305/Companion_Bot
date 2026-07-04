@@ -28,3 +28,6 @@ htmlcov/
 
 # Regenerated regression reports (baseline.json is the committed contract)
 eval/reports/
+
+# Regenerated Set B manual-eval outputs (harness: eval/run_manual_eval.py)
+eval/results/manual_eval.*
