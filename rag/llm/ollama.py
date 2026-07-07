@@ -51,11 +51,23 @@ class OllamaLLM:
 
     def generate(self, query: str, passages: list[RetrievedChunk], system_prompt: str) -> str:
         sources = format_sources(passages)
+        valid_markers = ", ".join(f"[{i}]" for i in range(1, len(passages) + 1))
         user = (
             f"SOURCE PASSAGES:\n{sources}\n\nQUESTION: {query}\n\n"
-            "Answer only from the passages. Cite every statement with its [n] "
-            'marker. If unsupported, reply exactly: "Information not found in '
-            'approved knowledge sources."'
+            "Answer only from the SOURCE PASSAGES.\n\n"
+            "Citation rules:\n"
+            f"- Use only these exact citation markers: {valid_markers}.\n"
+            "- Do not write placeholder or alternate markers such as [n], [n 1], "
+            "[source 1], footnotes, or any marker not listed above.\n"
+            "- Every answer sentence must end with one or more valid markers.\n"
+            "- If you cannot answer using valid listed markers, reply exactly: "
+            '"Information not found in approved knowledge sources."\n\n'
+            "Output contract:\n"
+            "- Do not acknowledge these instructions.\n"
+            '- Do not say "Here", "Okay", "Sure", "Below", or similar setup text.\n'
+            "- Start directly with the answer.\n"
+            "- Your entire response must be either a cited answer or exactly: "
+            '"Information not found in approved knowledge sources."'
         )
         payload = {
             "model": self.model,

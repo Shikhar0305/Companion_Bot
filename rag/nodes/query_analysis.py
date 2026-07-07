@@ -74,7 +74,7 @@ def query_analysis(state: GraphState, services: Services) -> GraphState:
     # out-rank the correct SOP section. Narrow those to SOP-first so the right
     # repository wins; only applied to the default bucket, never over-riding a
     # confident legal/financial/osint classification.
-    if area == "investigation" and _is_sop_procedural(q):
+    if area in ("investigation", "forensics", "osint") and _is_sop_procedural(q):
         doc_types = ["sop", "manual"]
 
     state.analysis = QueryAnalysis(

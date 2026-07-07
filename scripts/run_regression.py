@@ -33,7 +33,7 @@ def _build_pipeline():
 
 def _write_reports(summary: dict, embedder: str) -> None:
     os.makedirs(REPORT_DIR, exist_ok=True)
-    with open(os.path.join(REPORT_DIR, "regression_report.csv"), "w", newline="") as fh:
+    with open(os.path.join(REPORT_DIR, "regression_report.csv"), "w", newline="", encoding="utf-8") as fh:
         w = csv.writer(fh)
         w.writerow(["category", "failmode", "passed", "abstained", "cited_doc_types", "query"])
         for r in summary["results"]:
@@ -50,7 +50,7 @@ def _write_reports(summary: dict, embedder: str) -> None:
         if not r.passed:
             got = "ABSTAIN" if r.abstained else ("+".join(r.cited_doc_types) or "no-cite")
             lines.append(f"- [{r.case.category}/{r.case.failmode}] {r.case.query}  → got: {got}")
-    with open(os.path.join(REPORT_DIR, "regression_report.md"), "w") as fh:
+    with open(os.path.join(REPORT_DIR, "regression_report.md"), "w", encoding="utf-8") as fh:
         fh.write("\n".join(lines) + "\n")
 
 
@@ -72,11 +72,12 @@ def main() -> int:
         print(f"  {cat:14} {acc:.1%}")
 
     if args.update_baseline:
-        with open(BASELINE_PATH, "w") as fh:
+        with open(BASELINE_PATH, "w", encoding="utf-8") as fh:
             json.dump(frozen, fh, indent=2)
         print(f"\nBaseline frozen → {BASELINE_PATH}")
     elif os.path.exists(BASELINE_PATH):
-        base = json.load(open(BASELINE_PATH))
+        with open(BASELINE_PATH, encoding="utf-8") as fh:
+            base = json.load(fh)
         print(f"\nvs baseline ({base.get('embedder')}, overall {base['overall']:.1%}):")
         for cat in sorted(summary["by_category"]):
             now, was = summary["by_category"][cat], base["by_category"].get(cat, 0.0)

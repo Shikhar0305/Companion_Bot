@@ -69,6 +69,11 @@ _INJECTION = re.compile(
     re.IGNORECASE,
 )
 
+_UNSAFE_DOCUMENT = re.compile(
+    r"\b(?:draft|write|create|make|generate)\b.*\bfake\b.*\b(?:arrest\s+)?warrant\b",
+    re.IGNORECASE,
+)
+
 _REFUSAL = (
     "I can only assist with cybercrime investigation, legal, digital-forensics, "
     "OSINT, and financial-fraud questions grounded in the approved knowledge base."
@@ -86,6 +91,12 @@ def guardrail(state: GraphState, services: Services) -> GraphState:
         state.in_scope = False
         state.refusal = _REFUSAL
         state.verifier_report["injection_blocked"] = True
+        return state
+
+    if _UNSAFE_DOCUMENT.search(q):
+        state.in_scope = False
+        state.refusal = _REFUSAL
+        state.verifier_report["unsafe_document_blocked"] = True
         return state
 
     if not _in_scope(q):

@@ -81,9 +81,10 @@ CAPABILITY_KEYWORDS: dict[str, tuple[str, ...]] = {
               "certificate", "admissibility", "admissible", "electronic record",
               "proof of", "evidence act", "sakshya", "statute", "penal"),
     "forensics": ("seizure", "chain of custody", "preservation", "acquisition",
-                  "forensic", "hash", "imaging", "device", "evidence", "hard disk"),
+                  "forensic", "hash", "imaging", "device", "evidence", "hard disk",
+                  "extract", "sim", "sim card"),
     "osint": ("osint", "ip address", "domain", "whois", "username", "geolocation",
-              "social media", "open source"),
+              "social media", "open source", "ip logs", "isp", "ipdr"),
     "financial": ("upi", "transaction", "freeze", "bank", "account", "money trail",
                   "npci", "rbi", "refund", "ledger", "beneficiary",
                   "1930", "ncrp", "recall", "reversal", "chargeback", "mule",
@@ -101,6 +102,10 @@ RECOVERY_KEYWORDS: tuple[str, ...] = (
     "crypto asset recovery", "wallet tracing", "fund recovery",
     # single-token aliases that may appear standalone in queries
     "freeze", "recall", "reversal", "beneficiary", "nodal", "helpline", "mule",
+    # Hindi recovery cues used by investigator queries.
+    "फर्जी बैंक", "बैंक खाता", "फ्रीज", "खाता",
+    # Mojibake form currently present in the manual-eval fixture.
+    "à¤¬à¥ˆà¤‚à¤• à¤–à¤¾à¤¤à¤¾", "à¤«à¥à¤°à¥€à¤œ",
 )
 
 # High-precision cues for case-documentation / intake procedures that live in the
@@ -112,7 +117,8 @@ RECOVERY_KEYWORDS: tuple[str, ...] = (
 SOP_PROCEDURAL_CUES: tuple[str, ...] = (
     "complainant", "charge sheet", "chargesheet", "charge-sheet", "case diary",
     "case file", "seizure memo", "record statement", "statement recording",
-    "supervisory", "intake",
+    "supervisory", "intake", "preservation request", "data preservation",
+    "sim card", "ip logs", "isp",
 )
 
 # Statute aliases used in query expansion (docs/03-rag-architecture.md §3.3 node 2).
